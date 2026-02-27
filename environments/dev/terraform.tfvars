@@ -75,3 +75,7 @@ cosmos_db_free_tier_enabled               = true
 cosmos_db_database_name                   = "enterprise_memory"
 cosmos_db_zone_redundant                  = false
 cosmos_db_enable_multiple_write_locations = false
+cosmos_db_backup_type = "Periodic"
+cosmos_db_backup_storage_redundancy = "Local"
+cosmos_db_backup_interval_in_minutes = 60
+cosmos_db_backup_retention_in_hours = 0
