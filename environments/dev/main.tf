@@ -57,27 +57,27 @@ module "function_app" {
   for_each = var.enable_function_app ? var.function_container_premium : {}
   source   = "../../modules/function-app-container"
 
-  function_name = each.value.name
+#   function_name = each.value.name
 
-  # AUTO-GENERATION: Consistently prefix the function name with "asp-" for its Plan
-  func_plan_name = "asp-${each.value.name}"
+#   # AUTO-GENERATION: Consistently prefix the function name with "asp-" for its Plan
+# #   func_plan_name = "asp-${each.value.name}"
 
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+# #   location            = data.azurerm_resource_group.rg.location
+# #   resource_group_name = data.azurerm_resource_group.rg.name
 
-  func_os_type        = each.value.os_type
-  func_sku            = each.value.sku
-  func_zone_balancing = each.value.zone_balancing
+# #   func_os_type        = each.value.os_type
+# #   func_sku            = each.value.sku
+# #   func_zone_balancing = each.value.zone_balancing
 
-  func_storage_account_name     = each.value.storage_account_name
-  func_storage_account_tier     = each.value.storage_account_tier
-  func_account_replication_type = each.value.account_replication_type
-  func_account_kind             = each.value.account_kind
+# #   func_storage_account_name     = each.value.storage_account_name
+# #   func_storage_account_tier     = each.value.storage_account_tier
+# #   func_account_replication_type = each.value.account_replication_type
+# #   func_account_kind             = each.value.account_kind
 
-  func_image_name   = each.value.image_name
-  func_image_tag    = each.value.image_tag
-  func_registry_url = each.value.registry_url
-}
+# #   func_image_name   = each.value.image_name
+# #   func_image_tag    = each.value.image_tag
+# #   func_registry_url = each.value.registry_url
+# # }
 
 
 # Azure Key Vault
@@ -106,6 +106,8 @@ module "apim" {
   publisher_name  = var.apim_publisher_name
   publisher_email = var.apim_publisher_email
   sku_name        = var.sku_name
+
+  depends_on = [module.service_bus]
 }
 
 # Azure Service Bus
