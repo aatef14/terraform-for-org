@@ -115,3 +115,18 @@ module "service_bus" {
   sbus_sku_name                = var.sbus_sku_name
   premium_messaging_partitions = var.premium_messaging_partitions
 }
+
+# Azure Cosmos DB
+module "cosmos_db" {
+  source = "../../modules/cosmos-db"
+
+  name                = var.cosmos_db_name
+  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = var.cosmos_db_location
+  throughput          = var.cosmos_db_throughput
+  zone_redundant      = var.cosmos_db_zone_redundant
+  db_name             = var.cosmos_db_database_name
+  enable_multiple_write_locations = var.cosmos_db_enable_multiple_write_locations
+  cosmos_db_offer_type = var.cosmos_db_offer_type
+  cosmos_db_kind = var.cosmos_db_kind
+}

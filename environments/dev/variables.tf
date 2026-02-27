@@ -103,3 +103,50 @@ variable "sbus_sku_name" {
 variable "premium_messaging_partitions" {
   type = number
 }
+
+# AZURE COSMOS DB CONFIG
+variable "cosmos_db_name" {
+  description = "Cosmos DB account name"
+  type        = string
+}
+
+variable "cosmos_db_throughput" {
+  description = "Cosmos DB manual throughput"
+  type        = number
+  default     = 6000
+}
+
+variable "cosmos_db_location" {
+  description = "Cosmos DB primary location"
+  type        = string
+  default     = "uaenorth"
+}
+
+variable "cosmos_db_zone_redundant" {
+  description = "Enable zone redundant"
+  type        = bool
+  default     = false
+}
+
+variable "cosmos_db_offer_type" {
+  description = "Cosmos DB offer type"
+  type        = string
+  default     = "Standard"
+}
+
+variable "cosmos_db_kind" {
+  description = "Cosmos DB kind"
+  type        = string
+  default     = "GlobalDocumentDB"
+}
+
+variable "cosmos_db_enable_multiple_write_locations" {
+  description = "Enable multiple write locations"
+  type        = bool
+  default     = false
+}
+
+variable "cosmos_db_database_name" {
+  description = "Cosmos DB database name"
+  type        = string
+}
