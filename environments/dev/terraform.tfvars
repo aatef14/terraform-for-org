@@ -3,7 +3,7 @@
 
 # Provider Authentication
 subscription_id     = "a2b28c85-1948-4263-90ca-bade2bac4df4"
-resource_group_name = "kml_rg_main-dd62dcecf29742b8"
+resource_group_name = "kml_rg_main-4bfdac2cc0a44c62"
 location            = "eastus"
 location2           = ""
 
@@ -39,12 +39,12 @@ function_container_premium = {
     sku                      = "EP1"
     zone_balancing           = false
     storage_account_name     = "devfuncstorage01"
-    storage_account_tier     = "Premium"
+    storage_account_tier     = "Standard"
     account_replication_type = "LRS"
     account_kind             = "StorageV2"
-    image_name               = "value"
-    image_tag                = "value"
-    registry_url             = "value"
+    image_name               = "appsvc/staticsite"
+    image_tag                = "latest"
+    registry_url             = "https://mcr.microsoft.com"
   }
 }
 
@@ -61,17 +61,17 @@ sku_name             = "Basic_1"
 
 # Service Bus namespace config
 service_bus_name             = "sb-dev-qe-01"
-service_bus_capacity         = 1
-premium_messaging_partitions = 1
+service_bus_capacity         = 0
+premium_messaging_partitions = 0
 sbus_sku_name                = "Basic"
 
 # COSMOS DB NO SQL config
-cosmos_db_name          = "cosmos-qe-ip-qisp-dev-01"
-cosmos_db_throughput    = 6000
-cosmos_db_location      = "uaenorth"
-cosmos_db_kind = ""
-cosmos_db_offer_type = ""
-cosmos_db_free_tier_enabled = false
-cosmos_db_database_name = "enterprise_memory"
-cosmos_db_zone_redundant = false
+cosmos_db_name                            = "cosmos-qe-ip-qisp-dev-01"
+cosmos_db_throughput                      = 1000
+cosmos_db_location                        = "uaenorth"
+cosmos_db_kind                            = "GlobalDocumentDB"
+cosmos_db_offer_type                      = "Standard"
+cosmos_db_free_tier_enabled               = true
+cosmos_db_database_name                   = "enterprise_memory"
+cosmos_db_zone_redundant                  = false
 cosmos_db_enable_multiple_write_locations = false

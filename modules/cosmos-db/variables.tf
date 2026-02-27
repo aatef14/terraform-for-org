@@ -16,7 +16,7 @@ variable "location" {
 variable "zone_redundant" {
   description = "Primary Azure region"
   type        = bool
-  default = false
+  default     = false
 }
 
 variable "cosmos_db_offer_type" {
@@ -71,6 +71,12 @@ variable "backup_retention_in_hours" {
   description = "Backup retention in hours"
   type        = number
   default     = 8
+}
+
+variable "backup_storage_redundancy" {
+  description = "Storage redundancy for backup"
+  type        = string
+  default     = "Geo"
 }
 
 variable "db_name" {

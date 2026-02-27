@@ -152,6 +152,30 @@ variable "cosmos_db_enable_multiple_write_locations" {
   default     = false
 }
 
+variable "cosmos_db_backup_type" {
+  description = "Cosmos DB backup type"
+  type        = string
+  default     = "Periodic"
+}
+
+variable "cosmos_db_backup_interval_in_minutes" {
+  description = "Cosmos DB backup interval"
+  type        = number
+  default     = 240
+}
+
+variable "cosmos_db_backup_retention_in_hours" {
+  description = "Cosmos DB backup retention"
+  type        = number
+  default     = 8
+}
+
+variable "cosmos_db_backup_storage_redundancy" {
+  description = "Cosmos DB backup storage redundancy"
+  type        = string
+  default     = "Geo"
+}
+
 variable "cosmos_db_database_name" {
   description = "Cosmos DB database name"
   type        = string

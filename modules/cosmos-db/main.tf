@@ -22,10 +22,10 @@ resource "azurerm_cosmosdb_account" "this" {
   multiple_write_locations_enabled = var.enable_multiple_write_locations
 
   backup {
-    type                = "Periodic"
-    interval_in_minutes = 240
-    retention_in_hours  = 8
-    storage_redundancy  = "Geo" # Periodic backup storage
+    type                = var.backup_type
+    interval_in_minutes = var.backup_interval_in_minutes
+    retention_in_hours  = var.backup_retention_in_hours
+    storage_redundancy  = var.backup_storage_redundancy
   }
 
   analytical_storage_enabled = false
