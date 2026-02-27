@@ -50,33 +50,32 @@ module "app_services" {
 
 
 # FUNCTION APP CONFIG (Container Based - Premium)
-
 # This also uses 'for_each' to allow deploying multiple functions easily
-# module "function_app" {
-#   for_each = var.function_container_premium
-#   source   = "../../modules/function-app-container"
+module "function_app" {
+  for_each = var.function_container_premium
+  source   = "../../modules/function-app-container"
 
-#   function_name = each.value.name
+  function_name = each.value.name
 
-#   # AUTO-GENERATION: Consistently prefix the function name with "asp-" for its Plan
-# #   func_plan_name = "asp-${each.value.name}"
+  # AUTO-GENERATION: Consistently prefix the function name with "asp-" for its Plan
+  func_plan_name = "asp-${each.value.name}"
 
-# #   location            = data.azurerm_resource_group.rg.location
-# #   resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
 
-# #   func_os_type        = each.value.os_type
-# #   func_sku            = each.value.sku
-# #   func_zone_balancing = each.value.zone_balancing
+  func_os_type        = each.value.os_type
+  func_sku            = each.value.sku
+  func_zone_balancing = each.value.zone_balancing
 
-# #   func_storage_account_name     = each.value.storage_account_name
-# #   func_storage_account_tier     = each.value.storage_account_tier
-# #   func_account_replication_type = each.value.account_replication_type
-# #   func_account_kind             = each.value.account_kind
+  func_storage_account_name     = each.value.storage_account_name
+  func_storage_account_tier     = each.value.storage_account_tier
+  func_account_replication_type = each.value.account_replication_type
+  func_account_kind             = each.value.account_kind
 
-# #   func_image_name   = each.value.image_name
-# #   func_image_tag    = each.value.image_tag
-# #   func_registry_url = each.value.registry_url
-# # }
+  func_image_name   = each.value.image_name
+  func_image_tag    = each.value.image_tag
+  func_registry_url = each.value.registry_url
+}
 
 
 # Azure Key Vault
@@ -103,8 +102,6 @@ module "apim" {
   publisher_name  = var.apim_publisher_name
   publisher_email = var.apim_publisher_email
   sku_name        = var.sku_name
-
-  depends_on = [module.service_bus]
 }
 
 # Azure Service Bus
@@ -117,24 +114,4 @@ module "service_bus" {
   capacity                     = var.service_bus_capacity
   sbus_sku_name                = var.sbus_sku_name
   premium_messaging_partitions = var.premium_messaging_partitions
-}
-
-# Azure Cosmos DB
-module "cosmos_db" {
-  source = "../../modules/cosmos-db"
-
-  name                            = var.cosmos_db_name
-  resource_group_name             = data.azurerm_resource_group.rg.name
-  location                        = data.azurerm_resource_group.rg.location
-  throughput                      = var.cosmos_db_throughput
-  zone_redundant                  = var.cosmos_db_zone_redundant
-  db_name                         = var.cosmos_db_database_name
-  enable_multiple_write_locations = var.cosmos_db_enable_multiple_write_locations
-  cosmos_db_offer_type            = var.cosmos_db_offer_type
-  cosmos_db_kind                  = var.cosmos_db_kind
-  cosmos_db_free_tier_enabled     = var.cosmos_db_free_tier_enabled
-  backup_type                     = var.cosmos_db_backup_type
-  backup_interval_in_minutes      = var.cosmos_db_backup_interval_in_minutes
-  backup_retention_in_hours       = var.cosmos_db_backup_retention_in_hours
-  backup_storage_redundancy       = var.cosmos_db_backup_storage_redundancy
 }
