@@ -140,6 +140,12 @@ variable "cosmos_db_kind" {
   default     = "GlobalDocumentDB"
 }
 
+variable "cosmos_db_free_tier_enabled" {
+  description = "Enable free tier"
+  type        = bool
+  default     = false
+}
+
 variable "cosmos_db_enable_multiple_write_locations" {
   description = "Enable multiple write locations"
   type        = bool

@@ -31,6 +31,12 @@ variable "cosmos_db_kind" {
   default     = "GlobalDocumentDB"
 }
 
+variable "cosmos_db_free_tier_enabled" {
+  description = "Enable free tier"
+  type        = bool
+  default     = false
+}
+
 variable "consistency_level" {
   description = "Cosmos DB consistency level"
   type        = string

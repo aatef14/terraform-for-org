@@ -71,6 +71,7 @@ cosmos_db_throughput    = 6000
 cosmos_db_location      = "uaenorth"
 cosmos_db_kind = ""
 cosmos_db_offer_type = ""
+cosmos_db_free_tier_enabled = false
 cosmos_db_database_name = "enterprise_memory"
 cosmos_db_zone_redundant = false
 cosmos_db_enable_multiple_write_locations = false

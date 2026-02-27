@@ -5,7 +5,7 @@ resource "azurerm_cosmosdb_account" "this" {
   offer_type          = var.cosmos_db_offer_type
   kind                = var.cosmos_db_kind
 
-  free_tier_enabled = false # Always-free quantity disabled
+  free_tier_enabled = var.cosmos_db_free_tier_enabled # Always-free quantity disabled
 
   consistency_policy {
     consistency_level = var.consistency_level

@@ -129,4 +129,6 @@ module "cosmos_db" {
   enable_multiple_write_locations = var.cosmos_db_enable_multiple_write_locations
   cosmos_db_offer_type = var.cosmos_db_offer_type
   cosmos_db_kind = var.cosmos_db_kind
+  cosmos_db_free_tier_enabled = var.cosmos_db_free_tier_enabled
 }
+  
