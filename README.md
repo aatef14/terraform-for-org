@@ -51,13 +51,38 @@ Find the `function_container_premium` block and add a new entry similar to the o
 2. Run `terraform init` (only the first time).
 3. Run `terraform plan` to see what will be created.
 4. Run `terraform apply` to provision the resources.
+5. Merge your `feature` branch into `main` via the GitHub Portal once verified.
+
+---
+
+## 🕹️ Selective Provisioning (Feature Toggles)
+You can control exactly which parts of the infrastructure are created without deleting any code. 
+
+In `environments/dev/terraform.tfvars`, look for the **MODULE TOGGLES** section:
+
+```hcl
+enable_storage_account = true
+enable_app_services    = false  # This service will NOT be created
+enable_cosmos_db       = true
+```
+
+*   **`true`**: Terraform will create/maintain the resource.
+*   **`false`**: Terraform will skip creation or **destroy** the resource if it already exists.
+
+This is useful for saving costs during development or for testing specific modules in isolation.
 
 ---
 
 ## 🛠️ How to Add New Service Modules
 *For Terraform Developers extending the template.*
 
-If you want to add a brand new Azure service (e.g., Azure SQL, CosmosDB) to this template, follow these 3 steps:
+### 🌳 Branching Strategy (MANDATORY)
+Before starting any work on a new module or feature, ALWAYS create a separate feature branch:
+`git checkout -b feature-<module-name-or-headline>`
+
+**Never push directly to `main`.** Always push your feature branch to the repository and merge it via a Pull Request in the GitHub Portal.
+
+---
 
 ### Step 1: Create the Module
 1. Create a new folder in `modules/my-new-service/`.

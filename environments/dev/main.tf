@@ -16,6 +16,7 @@ locals {
 
 # Storage account config
 module "storage_account" {
+  count  = var.enable_storage_account ? 1 : 0
   source = "../../modules/storage-account"
 
   name                = var.storage_account_name_dev
@@ -32,7 +33,7 @@ module "storage_account" {
 # 'each.key' would be the label (e.g., "frontend")
 # 'each.value' contains the technical details (name, sku, etc.)
 module "app_services" {
-  for_each = var.app_services_web_app
+  for_each = var.enable_app_services ? var.app_services_web_app : {}
   source   = "../../modules/app-service"
 
   app_service_name = each.value.name
@@ -52,9 +53,9 @@ module "app_services" {
 # FUNCTION APP CONFIG (Container Based - Premium)
 
 # This also uses 'for_each' to allow deploying multiple functions easily
-# module "function_app" {
-#   for_each = var.function_container_premium
-#   source   = "../../modules/function-app-container"
+module "function_app" {
+  for_each = var.enable_function_app ? var.function_container_premium : {}
+  source   = "../../modules/function-app-container"
 
 #   function_name = each.value.name
 
@@ -83,6 +84,7 @@ module "app_services" {
 data "azurerm_client_config" "current" {}
 
 module "key_vault" {
+  count  = var.enable_key_vault ? 1 : 0
   source = "../../modules/key-vault"
 
   key_vault_name      = var.key_vault_name
@@ -94,6 +96,7 @@ module "key_vault" {
 
 # Azure API Management
 module "apim" {
+  count  = var.enable_apim ? 1 : 0
   source = "../../modules/apim"
 
   name                = var.apim_name
@@ -109,6 +112,7 @@ module "apim" {
 
 # Azure Service Bus
 module "service_bus" {
+  count  = var.enable_service_bus ? 1 : 0
   source = "../../modules/service-bus"
 
   name                         = var.service_bus_name
@@ -121,6 +125,7 @@ module "service_bus" {
 
 # Azure Cosmos DB
 module "cosmos_db" {
+  count  = var.enable_cosmos_db ? 1 : 0
   source = "../../modules/cosmos-db"
 
   name                            = var.cosmos_db_name

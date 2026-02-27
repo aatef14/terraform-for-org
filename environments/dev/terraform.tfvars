@@ -7,6 +7,16 @@ resource_group_name = "kml_rg_main-4bfdac2cc0a44c62"
 location            = "eastus"
 location2           = ""
 
+# MODULE TOGGLES (Set to false to prevent creation)
+enable_storage_account = true
+enable_app_services    = true
+enable_function_app    = true
+enable_key_vault       = true
+enable_apim            = true
+enable_service_bus     = true
+enable_cosmos_db       = true
+
+
 # Storage Account Details
 storage_account_name_dev         = "stqeipqispdevqc01"
 storage_account_tier             = "Standard"
@@ -75,7 +85,9 @@ cosmos_db_free_tier_enabled               = true
 cosmos_db_database_name                   = "enterprise_memory"
 cosmos_db_zone_redundant                  = false
 cosmos_db_enable_multiple_write_locations = false
-cosmos_db_backup_type = "Periodic"
-cosmos_db_backup_storage_redundancy = "Local"
-cosmos_db_backup_interval_in_minutes = 60
-cosmos_db_backup_retention_in_hours = 0
+cosmos_db_backup_type                     = "Periodic"
+cosmos_db_backup_storage_redundancy       = "Local"
+cosmos_db_backup_interval_in_minutes      = 60
+cosmos_db_backup_retention_in_hours       = 0
+
+

@@ -22,6 +22,36 @@ variable "location2" {
   default     = ""
 }
 
+# FEATURE TOGGLES
+variable "enable_storage_account" {
+  type    = bool
+  default = true
+}
+variable "enable_app_services" {
+  type    = bool
+  default = true
+}
+variable "enable_function_app" {
+  type    = bool
+  default = true
+}
+variable "enable_key_vault" {
+  type    = bool
+  default = true
+}
+variable "enable_apim" {
+  type    = bool
+  default = true
+}
+variable "enable_service_bus" {
+  type    = bool
+  default = true
+}
+variable "enable_cosmos_db" {
+  type    = bool
+  default = true
+}
+
 
 # STORAGE ACCOUNT CONFIG
 variable "storage_account_name_dev" {
@@ -180,3 +210,5 @@ variable "cosmos_db_database_name" {
   description = "Cosmos DB database name"
   type        = string
 }
+
+
