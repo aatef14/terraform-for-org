@@ -19,6 +19,7 @@ resource "azurerm_linux_web_app" "this" {
 
   https_only                    = true
   public_network_access_enabled = false
+  virtual_network_subnet_id     = var.vnet_subnet_id
 
   site_config {
     always_on           = true

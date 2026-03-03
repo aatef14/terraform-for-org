@@ -14,8 +14,12 @@ terraform-template/
 │   └── ...                 # Other resource modules
 └── environments/           # 🌍 ENVIRONMENT DEFINITIONS
     └── dev/                # (e.g., Development Environment)
-        ├── main.tf         # Logic loop linking modules to data
-        ├── variables.tf    # Declaration of data structures
+        ├── main.tf         # Heart of the environment (links modules)
+        ├── vnet.tf         # 🌐 Core Networking (VNet, Subnets)
+        ├── pdns.tf         # 📛 Private DNS Zones
+        ├── pep.tf          # 🔒 Private Endpoints
+        ├── data_s.tf       # 💾 data sources
+        ├── variables.tf    # Data structure declarations
         ├── terraform.tfvars# ✏️ THE ONLY FILE YOU NEED TO EDIT
         ├── providers.tf    # Azure authentication config
         └── backend.tf      # State file location config
@@ -23,35 +27,50 @@ terraform-template/
 
 ---
 
+## 🛡️ Networking & Architecture (PEP & PDNS)
+
+To ensure high security, this template follows a **Private-Link-First** strategy. Resources are not exposed to the public internet; instead, they are connected to your Virtual Network via Private Endpoints.
+
+### Why separate files (`vnet.tf`, `pdns.tf`, `pep.tf`, `data_s.tf`)?
+
+We use a **Functional Separation** approach for environment files to maintain clarity and prevent `main.tf` from becoming unmanageable:
+
+| File | Purpose | Why separate? |
+| :--- | :--- | :--- |
+| **`vnet.tf`** | Virtual Networks and Subnets | This is the **Foundation**. Networking changes are high-risk; keeping them separate prevents accidental modification while working on apps. |
+| **`pdns.tf`** | Private DNS Zones | Managed as **Shared Infrastructure**. Multiple services (Logic Apps, Web Apps, SQL) often share the same DNS zone. Separation allows for cleaner VNet link management. |
+| **`pep.tf`** | Private Endpoints | The **Security Map**. This file acts as a central registry of how services are linked to the network. It's easier to audit security when all PEPs are in one place. |
+| **`data_s.tf`** | Stateful/Data Services | Separates **Data from Compute**. Services like Storage Accounts or Databases have different lifecycles than Apps. |
+| **`main.tf`** | Compute & Logic | Focuses on **Applications** (Logic Apps, Web Apps, Functions). This is where the business logic "lives". |
+
+### How it works:
+1. **Network Foundation (`vnet.tf`)**: Creates the "pipes" and subnets.
+2. **DNS Readiness (`pdns.tf`)**: Prepares the "phonebook" for private addresses (e.g., `privatelink.azurewebsites.net`).
+3. **Service Logic (`main.tf`/`data_s.tf`)**: Creates the actual services (Apps/DBs) with VNet Integration for outbound traffic.
+4. **Private Connection (`pep.tf`)**: Creates a Private Endpoint for inbound traffic and automatically registers the IP in the Private DNS Zone.
+
+---
+
 ## 🚀 How to Provision Resources
 *For users who just want to create resources.*
 
-If you need to add more App Services or Functions, you only need to modify **one file**:
+In this template, each application is managed as a **dedicated module block**. This provides granular control over individual SKUs, images, and networking settings for every frontend and backend instance.
+
+To modify or add services, you only need to update:
 `environments/dev/terraform.tfvars`
 
-### 1. Adding a Web App
-Find the `app_services_web_app` block and copy-paste an existing entry:
-```hcl
-app_services_web_app = {
-  new_app = {              # Unique ID for Terraform
-    name           = "app-my-new-service-01"
-    sku            = "B1"
-    zone_balancing = false
-    docker_image   = "mcr.microsoft.com/..."
-  }
-}
-```
-*Note: The App Service Plan is automatically created as `asp-app-my-new-service-01`.*
+### 1. Modifying a Web App
+Update the values for `app_service_name_fend`, `sku_name_fend`, etc., to change individual app settings.
 
-### 2. Adding a Function App
-Find the `function_container_premium` block and add a new entry similar to the one above.
+### 2. Adding a New Service
+1.  **Define Variables**: Ensure the new name and settings are added to `variables.tf`.
+2.  **Add Module Block**: Copy a module block in `main.tf` and point it to the new variables. This approach ensures maximum flexibility for heterogeneous app landscapes.
 
 ### 3. Running the Deployment
 1. Open terminal in `environments/dev/`.
 2. Run `terraform init` (only the first time).
 3. Run `terraform plan` to see what will be created.
 4. Run `terraform apply` to provision the resources.
-5. Merge your `feature` branch into `main` via the GitHub Portal once verified.
 
 ---
 
@@ -62,14 +81,12 @@ In `environments/dev/terraform.tfvars`, look for the **MODULE TOGGLES** section:
 
 ```hcl
 enable_storage_account = true
-enable_app_services    = false  # This service will NOT be created
+enable_logic_app       = false  # This specific service will NOT be created
 enable_cosmos_db       = true
 ```
 
 *   **`true`**: Terraform will create/maintain the resource.
 *   **`false`**: Terraform will skip creation or **destroy** the resource if it already exists.
-
-This is useful for saving costs during development or for testing specific modules in isolation.
 
 ---
 
@@ -80,7 +97,7 @@ This is useful for saving costs during development or for testing specific modul
 Before starting any work on a new module or feature, ALWAYS create a separate feature branch:
 `git checkout -b feature-<module-name-or-headline>`
 
-**Never push directly to `main`.** Always push your feature branch to the repository and merge it via a Pull Request in the GitHub Portal.
+**Never push directly to `main`.** Always merge via Pull Request in the GitHub Portal.
 
 ---
 
@@ -90,16 +107,16 @@ Before starting any work on a new module or feature, ALWAYS create a separate fe
 
 ### Step 2: Declare the Variable
 1. Go to `environments/dev/variables.tf`.
-2. Define how the data should look (e.g., `variable "my_new_service_config" { type = map(object({...})) }`).
+2. Define the configuration variables needed for your service.
 
 ### Step 3: Link in Main
-1. Go to `environments/dev/main.tf`.
-2. Add the module block using `for_each`:
+1. Go to `environments/dev/main.tf` (or `data_s.tf` for data/storage).
+2. Add the unique module block:
    ```hcl
-   module "my_service" {
-     for_each = var.my_new_service_config
-     source   = "../../modules/my-new-service"
-     # Pass variables using each.value
+   module "my_new_service" {
+     source = "../../modules/my-new-service"
+     name   = var.my_new_service_name
+     # ... Pass other variables
    }
    ```
 
@@ -107,13 +124,13 @@ Before starting any work on a new module or feature, ALWAYS create a separate fe
 
 ## 💡 Key Design Patterns
 
-### 1. DRY (Don't Repeat Yourself)
-By using `for_each`, we avoid copy-pasting code in `main.tf`. One module block can create 1 or 100 resources based on the list in `terraform.tfvars`.
+### 1. Granular Control
+By using individual module blocks instead of loops, you can change the SKU or specific configuration of one app without affecting others in the same group.
 
 ### 2. Auto-Naming
-We use **interpolation** to standardize names. For example, `plan_name = "asp-${each.value.name}"` ensures that all service plans follow the naming convention without the user having to type it.
+Standardized prefixes (e.g., `asp-`, `pe-`, `st-`) are used within modules to ensure naming compliance across the organization.
 
 ### 3. Decoupling
 *   **Modules:** Contain "How" to build.
-*   **Tfvars:** Contains "What" to build.
-*   **Main:** Acts as the bridge between the two.
+*   **Tfvars:** Contains "What" values to use.
+*   **Split Files:** Separate Network, DNS, and Compute logic for clarity.

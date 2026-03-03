@@ -25,3 +25,9 @@ variable "docker_image_name" {
 variable "zone_balancing_enabled" {
   type = bool
 }
+
+variable "vnet_subnet_id" {
+  description = "The ID of the subnet for VNet integration"
+  type        = string
+  default     = null
+}
