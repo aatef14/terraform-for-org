@@ -5,7 +5,7 @@ resource "azurerm_key_vault" "this" {
   resource_group_name = var.resource_group_name
   tenant_id           = var.tenant_id
 
-  sku_name = "standard"
+  sku_name = var.key_vault_sku_name
 
   # Access Policy permission model (default)
   # No access_policy block included

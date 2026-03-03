@@ -14,7 +14,7 @@ resource "azurerm_service_plan" "logic" {
   name                = var.app_service_plan_name
   location            = var.location
   resource_group_name = var.resource_group_name
-
+  zone_balancing_enabled = var.zone_balancing_enabled
   os_type  = "Windows"
   sku_name = var.sku_name
 
@@ -29,7 +29,7 @@ resource "azurerm_logic_app_standard" "this" {
   app_service_plan_id        = azurerm_service_plan.logic.id
   storage_account_name       = azurerm_storage_account.logic.name
   storage_account_access_key = azurerm_storage_account.logic.primary_access_key
-
+  
   https_only                = true
   virtual_network_subnet_id = var.virtual_network_subnet_id
 

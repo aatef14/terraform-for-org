@@ -60,6 +60,7 @@ module "subnet_apim_qc" {
 
 
 
+
 # VNET_Sweden_Central
 module "vnet_sc" {
   source = "../../modules/vnet"
@@ -90,6 +91,17 @@ module "subnet_logic_sc" {
   resource_group_name = data.azurerm_resource_group.rg.name
   vnet_name           = module.vnet_sc.vnet_name
   address_prefixes    = var.subnet_logic_sc_prefix
+
+  depends_on = [module.vnet_sc]
+}
+
+module "subnet_func_sc" {
+  source = "../../modules/subnet"
+
+  subnet_name         = var.subnet_func_sc_name
+  resource_group_name = data.azurerm_resource_group.rg.name
+  vnet_name           = module.vnet_sc.vnet_name
+  address_prefixes    = var.subnet_func_sc_prefix
 
   depends_on = [module.vnet_sc]
 }

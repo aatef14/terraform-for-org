@@ -1,6 +1,6 @@
 # 🏗️ Terraform Infrastructure Template
 
-This template is designed to simplify the provisioning of Azure resources. It uses a modular architecture to ensure that infrastructure is consistent, scalable, and easy to deploy.
+This template is a production-ready framework for provisioning Azure resources with a **Security-First** mindset. It uses a modular architecture to ensure infrastructure is consistent, scalable, and fully isolated from the public internet.
 
 ---
 
@@ -9,128 +9,85 @@ This template is designed to simplify the provisioning of Azure resources. It us
 ```text
 terraform-template/
 ├── modules/                # 🧩 REUSABLE BUILDING BLOCKS
-│   ├── app-service/        # Logic to build Web Apps
-│   ├── function-app/       # Logic to build Function Apps
+│   ├── pdns/               # 📛 Private DNS Zone (Shared "Phonebook")
+│   ├── pep/                # 🔒 Private Endpoint (The "Locked Gate")
+│   ├── event-hub/          # 🚀 Event Hubs Messaging
+│   ├── linux-vm/           # 🐧 Private Linux Servers (No Public IP)
+│   ├── function-app-container/# 📦 Container-based Function Apps
 │   └── ...                 # Other resource modules
 └── environments/           # 🌍 ENVIRONMENT DEFINITIONS
-    └── dev/                # (e.g., Development Environment)
-        ├── main.tf         # Heart of the environment (links modules)
-        ├── vnet.tf         # 🌐 Core Networking (VNet, Subnets)
-        ├── pdns.tf         # 📛 Private DNS Zones
-        ├── pep.tf          # 🔒 Private Endpoints
-        ├── data_s.tf       # 💾 data sources
+    └── dev/                # (Example: Development Environment)
+        ├── main.tf         # Heart of the environment (Apps/Logic)
+        ├── vnet.tf         # 🌐 Core Networking (VNet/Subnets)
+        ├── pdns.tf         # 📛 Private DNS Zone Management
+        ├── pep.tf          # 🔒 All Private Endpoints in one place
+        ├── data_s.tf       # 💾 Data Source 
         ├── variables.tf    # Data structure declarations
         ├── terraform.tfvars# ✏️ THE ONLY FILE YOU NEED TO EDIT
-        ├── providers.tf    # Azure authentication config
-        └── backend.tf      # State file location config
 ```
 
 ---
 
-## 🛡️ Networking & Architecture (PEP & PDNS)
+## 🛡️ Networking & Architecture (The Security Triangle)
 
-To ensure high security, this template follows a **Private-Link-First** strategy. Resources are not exposed to the public internet; instead, they are connected to your Virtual Network via Private Endpoints.
+To ensure maximum security, this template follows a **Private-Link-First** strategy. Resources are hidden from the public internet using three core pillars:
 
-### Why separate files (`vnet.tf`, `pdns.tf`, `pep.tf`, `data_s.tf`)?
+### 1. 🌐 VNet Integration (Outbound)
+All apps (Logic Apps, Function Apps, Web Apps) are "injected" into a Virtual Network.
+*   **Purpose**: Allows the app to talk to other private resources (like a Database or Key Vault).
+*   **Setting**: `vnet_route_all_enabled = true` ensures even internet traffic goes through your secure network.
 
-We use a **Functional Separation** approach for environment files to maintain clarity and prevent `main.tf` from becoming unmanageable:
+### 2. 🔒 Private Endpoints (Inbound)
+Instead of a public URL, we create a Private Endpoint (**PEP**) for every service.
+*   **Purpose**: This gives the service a **private IP address** within your VNet.
+*   **Security**: Public network access is explicitly **disabled** at the resource level.
 
-| File | Purpose | Why separate? |
-| :--- | :--- | :--- |
-| **`vnet.tf`** | Virtual Networks and Subnets | This is the **Foundation**. Networking changes are high-risk; keeping them separate prevents accidental modification while working on apps. |
-| **`pdns.tf`** | Private DNS Zones | Managed as **Shared Infrastructure**. Multiple services (Logic Apps, Web Apps, SQL) often share the same DNS zone. Separation allows for cleaner VNet link management. |
-| **`pep.tf`** | Private Endpoints | The **Security Map**. This file acts as a central registry of how services are linked to the network. It's easier to audit security when all PEPs are in one place. |
-| **`data_s.tf`** | Stateful/Data Services | Separates **Data from Compute**. Services like Storage Accounts or Databases have different lifecycles than Apps. |
-| **`main.tf`** | Compute & Logic | Focuses on **Applications** (Logic Apps, Web Apps, Functions). This is where the business logic "lives". |
+### 3. 📛 Private DNS Zones (Resolution)
+Because resources use private IPs, we need a way to translate names (e.g., `myservice.azurewebsites.net`) to those private IPs.
+*   **Purpose**: The `pdns` module creates "Zones" (the phonebook) and links them to your VNets so names resolve correctly only from inside the network.
 
-### How it works:
-1. **Network Foundation (`vnet.tf`)**: Creates the "pipes" and subnets.
-2. **DNS Readiness (`pdns.tf`)**: Prepares the "phonebook" for private addresses (e.g., `privatelink.azurewebsites.net`).
-3. **Service Logic (`main.tf`/`data_s.tf`)**: Creates the actual services (Apps/DBs) with VNet Integration for outbound traffic.
-4. **Private Connection (`pep.tf`)**: Creates a Private Endpoint for inbound traffic and automatically registers the IP in the Private DNS Zone.
+---
+
+## 🐧 Special Case: Linux VMs (No Public IP)
+Our **`linux-vm`** module is configured for high security:
+*   **No Public IP**: The VM has no external gateway. It is ONLY accessible from within the VNet (e.g., via a Bastion or VPN).
+*   **Managed OS Disk**: Uses Standard SSDs for reliable performance.
+*   **Ubuntu 22.04 LTS**: Pre-configured with the latest stable Ubuntu image.
 
 ---
 
 ## 🚀 How to Provision Resources
-*For users who just want to create resources.*
 
-In this template, each application is managed as a **dedicated module block**. This provides granular control over individual SKUs, images, and networking settings for every frontend and backend instance.
-
-To modify or add services, you only need to update:
-`environments/dev/terraform.tfvars`
-
-### 1. Modifying a Web App
-Update the values for `app_service_name_fend`, `sku_name_fend`, etc., to change individual app settings.
-
-### 2. Adding a New Service
-1.  **Define Variables**: Ensure the new name and settings are added to `variables.tf`.
-2.  **Add Module Block**: Copy a module block in `main.tf` and point it to the new variables. This approach ensures maximum flexibility for heterogeneous app landscapes.
-
-### 3. Running the Deployment
-1. Open terminal in `environments/dev/`.
-2. Run `terraform init` (only the first time).
-3. Run `terraform plan` to see what will be created.
-4. Run `terraform apply` to provision the resources.
-
----
-
-## 🕹️ Selective Provisioning (Feature Toggles)
-You can control exactly which parts of the infrastructure are created without deleting any code. 
-
-In `environments/dev/terraform.tfvars`, look for the **MODULE TOGGLES** section:
-
+### 1. The Toggle System
+In `environments/dev/terraform.tfvars`, you can turn entire services on or off using **Feature Toggles**:
 ```hcl
-enable_storage_account = true
-enable_logic_app       = false  # This specific service will NOT be created
-enable_cosmos_db       = true
+enable_logic_app    = true   # Created
+enable_vm_linux     = false  # Skipped
+enable_event_hub    = true   # Created
 ```
 
-*   **`true`**: Terraform will create/maintain the resource.
-*   **`false`**: Terraform will skip creation or **destroy** the resource if it already exists.
+### 2. Variable Overrides
+Change names, SKUs, and capacities in one place. For example, to change an Event Hub's performance:
+```hcl
+event_hub_sku      = "Standard"
+event_hub_capacity = 3  # Set Throughput Units
+```
 
----
-
-## 🛠️ How to Add New Service Modules
-*For Terraform Developers extending the template.*
-
-### 🌳 Branching Strategy (MANDATORY)
-Before starting any work on a new module or feature, ALWAYS create a separate feature branch:
-`git checkout -b feature-<module-name-or-headline>`
-
-**Never push directly to `main`.** Always merge via Pull Request in the GitHub Portal.
-
----
-
-### Step 1: Create the Module
-1. Create a new folder in `modules/my-new-service/`.
-2. Add `main.tf` (resource logic), `variables.tf` (inputs), and `outputs.tf`.
-
-### Step 2: Declare the Variable
-1. Go to `environments/dev/variables.tf`.
-2. Define the configuration variables needed for your service.
-
-### Step 3: Link in Main
-1. Go to `environments/dev/main.tf` (or `data_s.tf` for data/storage).
-2. Add the unique module block:
-   ```hcl
-   module "my_new_service" {
-     source = "../../modules/my-new-service"
-     name   = var.my_new_service_name
-     # ... Pass other variables
-   }
-   ```
+### 3. Deployment Steps
+1. Navigate to `environments/dev/`.
+2. Run `terraform init`.
+3. Run `terraform plan` to audit changes.
+4. Run `terraform apply` to deploy.
 
 ---
 
 ## 💡 Key Design Patterns
 
-### 1. Granular Control
-By using individual module blocks instead of loops, you can change the SKU or specific configuration of one app without affecting others in the same group.
+*   **Granular Control**: We use individual module blocks instead of loops. This allows you to set a unique SKU for "App A" without affecting "App B".
+*   **Decoupling**: We separate **Compute** (`main.tf`), **Network** (`vnet.tf`), and **Security** (`pep.tf`) so you can modify one without risking the others.
+*   **Shorthand Modules**: Use `pdns` and `pep` modules for clean, readable code in your environment files.
 
-### 2. Auto-Naming
-Standardized prefixes (e.g., `asp-`, `pe-`, `st-`) are used within modules to ensure naming compliance across the organization.
+---
 
-### 3. Decoupling
-*   **Modules:** Contain "How" to build.
-*   **Tfvars:** Contains "What" values to use.
-*   **Split Files:** Separate Network, DNS, and Compute logic for clarity.
+## 📖 Reference Guides
+*   **[SKU_GUIDE.md](file:///c:/Users/MohammedAatef/Desktop/Project/terraform-template%20-%20Copy/SKU_GUIDE.md)**: Look here for a full list of valid SKUs and Tiers.

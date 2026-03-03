@@ -1,11 +1,6 @@
 # This is the Heart of Specific Environment configuration.
 # Use this to disable provisioning any unwanted services by selecting the module block 
 # and doing Ctrl + /, which will comment out the code.
-
-data "azurerm_resource_group" "rg" {
-  name = var.resource_group_name
-}
-
 # Local variables for common settings
 # locals are useful for values you want to reuse multiple times in this file
 locals {
@@ -22,8 +17,10 @@ module "storage_account" {
   source = "../../modules/storage-account"
 
   name                = var.storage_account_name_dev
-  resource_group_name = data.azurerm_resource_group.rg.name
-  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
+  location            = data.azurerm_resource_group.rg_dev.location
+
+
 
   account_tier             = var.storage_account_tier
   account_replication_type = var.storage_account_replication_type
@@ -42,6 +39,7 @@ module "app_service_frontend" {
 
   sku_name               = var.sku_name_fend
   zone_balancing_enabled = var.zoone_balancing_enabled_fend
+  vnet_subnet_id         = module.subnet_app_qc.subnet_id
   docker_image_name      = var.docker_image_name_fend
 }
 
@@ -55,6 +53,7 @@ module "app_service_backend" {
 
   sku_name               = var.sku_name_bend
   zone_balancing_enabled = var.zoone_balancing_enabled_bend
+  vnet_subnet_id         = module.subnet_app_qc.subnet_id
   docker_image_name      = var.docker_image_name_bend
 
 }
@@ -83,28 +82,32 @@ module "redis_cache" {
 
 # FUNCTION APP CONFIG (Container Based - Premium)
 # Individual block for Function App for granular control
-# module "function_app_1" {
-#   source = "../../modules/function-app-container"
+module "function_app_1" {
+  count  = var.enable_function_app ? 1 : 0
+  source = "../../modules/function-app-container"
 
-#   function_name  = "func-container-premium"
-#   func_plan_name = "asp-func-container-premium"
+  function_name  = "func-container-premium"
+  func_plan_name = "asp-func-container-premium"
 
-#   location            = data.azurerm_resource_group.rg.location
-#   resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
 
-#   func_os_type        = "Linux"
-#   func_sku            = "EP1"
-#   func_zone_balancing = false
+  func_os_type        = "Linux"
+  func_sku            = "EP1"
+  func_zone_balancing = false
 
-#   func_storage_account_name     = "devfuncstorage01"
-#   func_storage_account_tier     = "Standard"
-#   func_account_replication_type = "LRS"
-#   func_account_kind             = "StorageV2"
+  func_storage_account_name     = "stfuncqeqispstg01"
+  func_storage_account_tier     = "Standard"
+  func_account_replication_type = "LRS"
+  func_account_kind             = "StorageV2"
 
-#   func_image_name   = "appsvc/staticsite"
-#   func_image_tag    = "latest"
-#   func_registry_url = "https://mcr.microsoft.com"
-# }
+  func_image_name   = "appsvc/staticsite"
+  func_image_tag    = "latest"
+  func_registry_url = "https://mcr.microsoft.com"
+
+  vnet_subnet_id = module.subnet_func_sc.subnet_id
+  tags           = local.common_tags
+}
 
 
 # Azure Key Vault
@@ -114,10 +117,12 @@ module "key_vault" {
   count  = var.enable_key_vault ? 1 : 0
   source = "../../modules/key-vault"
 
+
   key_vault_name      = var.key_vault_name
   location            = data.azurerm_resource_group.rg.location
   resource_group_name = data.azurerm_resource_group.rg.name
   tenant_id           = data.azurerm_client_config.current.tenant_id
+  key_vault_sku_name  = var.key_vault_sku_name
 }
 
 
@@ -151,25 +156,25 @@ module "service_bus" {
 }
 
 # Azure Cosmos DB
-# module "cosmos_db" {
-#   count  = var.enable_cosmos_db ? 1 : 0
-#   source = "../../modules/cosmos-db"
+module "cosmos_db" {
+  count  = var.enable_cosmos_db ? 1 : 0
+  source = "../../modules/cosmos-db"
 
-#   name                            = var.cosmos_db_name
-#   resource_group_name             = data.azurerm_resource_group.rg.name
-#   location                        = data.azurerm_resource_group.rg.location
-#   throughput                      = var.cosmos_db_throughput
-#   zone_redundant                  = var.cosmos_db_zone_redundant
-#   db_name                         = var.cosmos_db_database_name
-#   enable_multiple_write_locations = var.cosmos_db_enable_multiple_write_locations
-#   cosmos_db_offer_type            = var.cosmos_db_offer_type
-#   cosmos_db_kind                  = var.cosmos_db_kind
-#   cosmos_db_free_tier_enabled     = var.cosmos_db_free_tier_enabled
-#   backup_type                     = var.cosmos_db_backup_type
-#   backup_interval_in_minutes      = var.cosmos_db_backup_interval_in_minutes
-#   backup_retention_in_hours       = var.cosmos_db_backup_retention_in_hours
-#   backup_storage_redundancy       = var.cosmos_db_backup_storage_redundancy
-# }
+  name                            = var.cosmos_db_name
+  resource_group_name             = data.azurerm_resource_group.rg.name
+  location                        = data.azurerm_resource_group.rg.location
+  throughput                      = var.cosmos_db_throughput
+  zone_redundant                  = var.cosmos_db_zone_redundant
+  db_name                         = var.cosmos_db_database_name
+  enable_multiple_write_locations = var.cosmos_db_enable_multiple_write_locations
+  cosmos_db_offer_type            = var.cosmos_db_offer_type
+  cosmos_db_kind                  = var.cosmos_db_kind
+  cosmos_db_free_tier_enabled     = var.cosmos_db_free_tier_enabled
+  backup_type                     = var.cosmos_db_backup_type
+  backup_interval_in_minutes      = var.cosmos_db_backup_interval_in_minutes
+  backup_retention_in_hours       = var.cosmos_db_backup_retention_in_hours
+  backup_storage_redundancy       = var.cosmos_db_backup_storage_redundancy
+}
 
 # Azure PostgreSQL Flexible Server
 module "postgresql" {
@@ -214,12 +219,50 @@ module "logic_app" {
   location            = var.location_sc
   resource_group_name = data.azurerm_resource_group.rg.name
 
-  app_service_plan_name            = var.logic_app_plan_name
+  app_service_plan_name            = "asp-${var.logic_app_name}"
   sku_name                         = var.logic_app_sku
+  zone_balancing_enabled           = var.logic_app_zone_balancing
   storage_account_name             = var.logic_app_storage_name
   storage_account_tier             = "Standard"
   storage_account_replication_type = "LRS"
   virtual_network_subnet_id        = module.subnet_logic_sc.subnet_id
+
+  tags = local.common_tags
+}
+
+# Azure Event Hub Namespace
+module "event_hub" {
+  count  = var.enable_event_hub ? 1 : 0
+  source = "../../modules/event-hub"
+
+  name                = var.event_hub_name
+  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+
+  sku      = var.event_hub_sku
+  capacity = var.event_hub_capacity
+
+  public_network_access_enabled = var.event_hub_public_network_access
+
+  tags = local.common_tags
+}
+
+# Azure Linux Virtual Machine
+module "linux_vm" {
+  count  = var.enable_vm_linux ? 1 : 0
+  source = "../../modules/linux-vm"
+
+  name                = var.vm_linux_name
+  location            = var.location_qc
+  resource_group_name = data.azurerm_resource_group.rg.name
+  subnet_id           = module.subnet_pep_qc.subnet_id
+
+  size           = var.vm_linux_size
+  admin_username = var.vm_linux_admin_username
+  admin_password = var.vm_linux_admin_password
+
+  os_disk_storage_account_type = "StandardSSD_LRS" # E15 corresponds to Standard SSD
+  os_disk_size_gb              = 256
 
   tags = local.common_tags
 }

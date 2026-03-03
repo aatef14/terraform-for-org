@@ -13,3 +13,8 @@ variable "location" {
 variable "tenant_id" {
   type = string
 }
+
+variable "key_vault_sku_name" {
+  type    = string
+  default = "standard"
+}

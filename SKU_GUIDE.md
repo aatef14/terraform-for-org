@@ -101,3 +101,33 @@ SKUs are formatted as `[Tier]_[Compute]_[Cores]`.
 | :--- | :--- | :--- |
 | 1 | **standard** | Standard vault (Software-protected). |
 | 2 | **premium** | Premium vault (HSM-protected). |
+
+---
+
+## 🏗️ Logic App Standard
+
+| Sr No | SKU Name | Description | Features |
+| :--- | :--- | :--- | :--- |
+| 1 | **WS1** | Workflow Standard 1 | VNet Integration, Private Link, Storage included. |
+| 2 | **WS2** | Workflow Standard 2 | More CPU/RAM than WS1. |
+| 3 | **WS3** | Workflow Standard 3 | Highest performance for heavy workflows. |
+
+---
+
+## ⚡ Event Grid
+
+| Sr No | SKU Name | Description | Features |
+| :--- | :--- | :--- | :--- |
+| 1 | **Standard** | Standard Namespace | Private Link, Pull/Push delivery, high scalability. |
+
+---
+
+## 🐧 Linux Virtual Machines (Compute)
+
+For general purpose workloads like the Ubuntu Jammy setup:
+
+| Sr No | SKU Name | Specs | Use Case |
+| :--- | :--- | :--- | :--- |
+| 1 | **Standard_D2s_v4** | 2 vCPUs, 8 GB RAM | Lightweight Linux servers/test. |
+| 2 | **Standard_D4s_v4**| 4 vCPUs, 16 GB RAM| Production workloads / App Hosting. |
+| 3 | **Standard_D8s_v4**| 8 vCPUs, 32 GB RAM| Memory intensive linux services. |

@@ -59,6 +59,18 @@ variable "enable_logic_app" {
   type    = bool
   default = true
 }
+variable "enable_event_hub" {
+  type    = bool
+  default = true
+}
+variable "enable_vm_linux" {
+  type    = bool
+  default = true
+}
+variable "enable_function_app" {
+  type    = bool
+  default = true
+}
 
 
 # STORAGE ACCOUNT CONFIG
@@ -114,6 +126,53 @@ variable "docker_image_name_bend" {
   default = "mcr.microsoft.com/appsvc/staticsite:latest"
 }
 
+# Function App - Container Based (Premium)
+variable "function_name" {
+  type = string
+}
+variable "func_plan_name" {
+  type = string
+}
+variable "func_os_type" {
+  type    = string
+  default = "Linux"
+}
+variable "func_sku" {
+  type    = string
+  default = "EP1"
+}
+variable "func_zone_balancing" {
+  type    = bool
+  default = false
+}
+variable "func_storage_account_name" {
+  type = string
+}
+variable "func_storage_account_tier" {
+  type    = string
+  default = "Standard"
+}
+variable "func_account_replication_type" {
+  type    = string
+  default = "LRS"
+}
+variable "func_account_kind" {
+  type    = string
+  default = "StorageV2"
+}
+variable "func_image_name" {
+  type    = string
+  default = "appsvc/staticsite"
+}
+variable "func_image_tag" {
+  type    = string
+  default = "latest"
+}
+variable "func_registry_url" {
+  type    = string
+  default = "https://mcr.microsoft.com"
+}
+
 # REDIS CACHE CONFIG
 variable "redis_name" {
   type = string
@@ -135,8 +194,14 @@ variable "redis_replicas_per_master" {
   type    = number
   default = null
 }
+
+# KEY VAULT CONFIG
 variable "key_vault_name" {
   type = string
+}
+variable "key_vault_sku_name" {
+  type    = string
+  default = "standard"
 }
 
 # AZURE API MANAGEMENT CONFIG
@@ -362,6 +427,23 @@ variable "event_grid_public_network_access" {
   default = false
 }
 
+# EVENT HUB CONFIG
+variable "event_hub_name" {
+  type = string
+}
+variable "event_hub_sku" {
+  type    = string
+  default = "Standard"
+}
+variable "event_hub_capacity" {
+  type    = number
+  default = 1
+}
+variable "event_hub_public_network_access" {
+  type    = bool
+  default = false
+}
+
 # LOGIC APP CONFIG
 variable "logic_app_name" {
   type = string
@@ -373,6 +455,43 @@ variable "logic_app_sku" {
   type    = string
   default = "WS1"
 }
+variable "logic_app_zone_balancing" {
+  type    = bool
+  default = false
+}
 variable "logic_app_storage_name" {
   type = string
+}
+
+# LINUX VM CONFIG
+variable "vm_linux_name" {
+  type = string
+}
+variable "vm_linux_size" {
+  type    = string
+  default = "Standard_D4s_v4"
+}
+variable "vm_linux_admin_username" {
+  type    = string
+  default = "azureuser"
+}
+variable "vm_linux_admin_password" {
+  type      = string
+  sensitive = true
+}
+
+# Subnet VM QC
+variable "subnet_vm_qc_name" {
+  type = string
+}
+variable "subnet_vm_qc_prefix" {
+  type = list(string)
+}
+
+# Subnet Function SC
+variable "subnet_func_sc_name" {
+  type = string
+}
+variable "subnet_func_sc_prefix" {
+  type = list(string)
 }

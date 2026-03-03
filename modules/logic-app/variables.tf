@@ -24,6 +24,12 @@ variable "sku_name" {
   default     = "WS1"
 }
 
+variable "zone_balancing_enabled" {
+  description = "Whether to enable zone balancing"
+  type        = bool
+  default     = false
+}
+
 variable "storage_account_name" {
   description = "The name of the storage account used by Logic App"
   type        = string
