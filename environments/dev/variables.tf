@@ -71,6 +71,20 @@ variable "enable_function_app" {
   type    = bool
   default = true
 }
+# AI FEATURE TOGGLES
+variable "enable_ai_foundry" {
+  type    = bool
+  default = false
+}
+variable "enable_ai_search" {
+  type    = bool
+  default = false
+}
+variable "enable_openai" {
+  type    = bool
+  default = false
+}
+
 
 
 # STORAGE ACCOUNT CONFIG
@@ -494,4 +508,45 @@ variable "subnet_func_sc_name" {
 }
 variable "subnet_func_sc_prefix" {
   type = list(string)
+}
+# AI FOUNDRY HUB CONFIG
+variable "ai_foundry_hub_name" {
+  type = string
+}
+variable "ai_foundry_project_name" {
+  type = string
+}
+
+# AI SEARCH CONFIG
+variable "ai_search_name" {
+  type = string
+}
+variable "ai_search_sku" {
+  type    = string
+  default = "standard"
+}
+
+# OPENAI CONFIG
+variable "openai_name" {
+  type = string
+}
+variable "openai_sku_name" {
+  type    = string
+  default = "S0"
+}
+variable "openai_deployments" {
+  type = map(object({
+    model_name    = string
+    model_version = string
+  }))
+  default = {
+    "gpt-4o" = {
+      model_name    = "gpt-4o"
+      model_version = "2024-05-13"
+    }
+    "text-embedding-3-small" = {
+      model_name    = "text-embedding-3-small"
+      model_version = "1"
+    }
+  }
 }

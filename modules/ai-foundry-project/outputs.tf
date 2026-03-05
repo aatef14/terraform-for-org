@@ -1,0 +1,1 @@
+output "project_id" { value = azurerm_ai_foundry_project.project.id }

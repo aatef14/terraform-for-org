@@ -6,8 +6,8 @@ module "pe_app_frontend" {
   source = "../../modules/pep"
 
   name                = "pe-${var.app_service_name_fend}"
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_qc.subnet_id
 
   private_connection_resource_id = module.app_service_frontend.app_service_id
@@ -22,8 +22,8 @@ module "pe_app_backend" {
   source = "../../modules/pep"
 
   name                = "pe-${var.app_service_name_bend}"
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_qc.subnet_id
 
   private_connection_resource_id = module.app_service_backend.app_service_id
@@ -39,8 +39,8 @@ module "pe_storage_blob" {
   source = "../../modules/pep"
 
   name                = "pe-${var.storage_account_name_dev}-blob"
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_qc.subnet_id
 
   private_connection_resource_id = module.storage_account[0].storage_account_id
@@ -56,8 +56,8 @@ module "pe_storage_file" {
   source = "../../modules/pep"
 
   name                = "pe-${var.storage_account_name_dev}-file"
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_qc.subnet_id
 
   private_connection_resource_id = module.storage_account[0].storage_account_id
@@ -73,8 +73,8 @@ module "pe_keyvault" {
   source = "../../modules/pep"
 
   name                = "pe-${var.key_vault_name}"
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_qc.subnet_id
 
   private_connection_resource_id = module.key_vault[0].key_vault_id
@@ -90,8 +90,8 @@ module "pe_redis" {
   source = "../../modules/pep"
 
   name                = "pe-${var.redis_name}"
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_qc.subnet_id
 
   private_connection_resource_id = module.redis_cache[0].redis_id
@@ -109,8 +109,8 @@ module "pe_service_bus" {
   source = "../../modules/pep"
 
   name                = "pe-${var.service_bus_name}"
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_qc.subnet_id
 
   private_connection_resource_id = module.service_bus[0].namespace_id
@@ -126,8 +126,8 @@ module "pe_apim" {
   source = "../../modules/pep"
 
   name                = "pe-${var.apim_name}"
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_qc.subnet_id
 
   private_connection_resource_id = module.apim[0].apim_id
@@ -144,8 +144,8 @@ module "pe_postgresql" {
   source = "../../modules/pep"
 
   name                = "pe-${var.postgresql_name}"
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_qc.subnet_id
 
   private_connection_resource_id = module.postgresql[0].postgresql_id
@@ -163,8 +163,8 @@ module "pe_postgresql" {
 #   source = "../../modules/pep"
 #
 #   name                = "pe-${var.cosmos_db_name}"
-#   location            = data.azurerm_resource_group.rg.location
-#   resource_group_name = data.azurerm_resource_group.rg.name
+#   location            = data.azurerm_resource_group.rg_dev.location
+#   resource_group_name = data.azurerm_resource_group.rg_dev.name
 #   subnet_id           = module.subnet_pep_qc.subnet_id
 #
 #   private_connection_resource_id = module.cosmos_db[0].cosmos_db_id
@@ -182,8 +182,8 @@ module "pe_event_grid" {
   source = "../../modules/pep"
 
   name                = "pe-${var.event_grid_name}"
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_qc.subnet_id
 
   private_connection_resource_id = module.event_grid[0].eventgrid_id
@@ -202,7 +202,7 @@ module "pe_logic_app" {
 
   name                = "pe-${var.logic_app_name}"
   location            = var.location_sc
-  resource_group_name = data.azurerm_resource_group.rg.name
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_sc.subnet_id
 
   private_connection_resource_id = module.logic_app[0].logic_app_id
@@ -218,8 +218,8 @@ module "pe_event_hub" {
   source = "../../modules/pep"
 
   name                = "pe-${var.event_hub_name}"
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_qc.subnet_id
 
   private_connection_resource_id = module.event_hub[0].eventhub_id
@@ -236,7 +236,7 @@ module "pe_function_app" {
 
   name                = "pe-func-container-premium"
   location            = var.location_sc
-  resource_group_name = data.azurerm_resource_group.rg.name
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_sc.subnet_id
 
   private_connection_resource_id = module.function_app_1[0].function_app_id
@@ -253,7 +253,7 @@ module "pe_func_storage_blob" {
 
   name                = "pe-stfuncqeqispstg01-blob"
   location            = var.location_sc
-  resource_group_name = data.azurerm_resource_group.rg.name
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_sc.subnet_id
 
   private_connection_resource_id = module.function_app_1[0].storage_account_id
@@ -270,7 +270,7 @@ module "pe_func_storage_file" {
 
   name                = "pe-stfuncqeqispstg01-file"
   location            = var.location_sc
-  resource_group_name = data.azurerm_resource_group.rg.name
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_sc.subnet_id
 
   private_connection_resource_id = module.function_app_1[0].storage_account_id

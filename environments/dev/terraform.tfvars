@@ -21,6 +21,11 @@ enable_event_hub       = false
 enable_vm_linux        = false
 enable_function_app    = false
 
+# AI FEATURE TOGGLES
+enable_ai_foundry = false
+enable_ai_search  = false
+enable_openai     = false
+
 
 # Storage Account Details
 storage_account_name_dev         = "storage-account"
@@ -181,5 +186,24 @@ subnet_logic_sc_prefix = ["/28"]
 #subnet function sc
 subnet_func_sc_name   = "snet-func-qe-qisp-stg-sc-01"
 subnet_func_sc_prefix = ["/28"]
+
+
+# AI FOUNDRY CONFIG
+ai_foundry_hub_name     = "qe-ai-hub"
+ai_foundry_project_name = "qe-ai-project"
+ai_search_name          = "qe-ai-search"
+ai_search_sku           = "standard"
+openai_name             = "qe-openai"
+openai_sku_name         = "S0"
+openai_deployments = {
+  "gpt-4o" = {
+    model_name    = "gpt-4o"
+    model_version = "2024-05-13"
+  }
+  "text-embedding-3-small" = {
+    model_name    = "text-embedding-3-small"
+    model_version = "1"
+  }
+}
 
 

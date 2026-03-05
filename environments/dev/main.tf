@@ -34,12 +34,12 @@ module "app_service_frontend" {
 
   app_service_name      = var.app_service_name_fend
   app_service_plan_name = "asp-${var.app_service_name_fend}"
-  resource_group_name   = data.azurerm_resource_group.rg.name
-  location              = data.azurerm_resource_group.rg.location
+  resource_group_name   = data.azurerm_resource_group.rg_dev.name
+  location              = data.azurerm_resource_group.rg_dev.location
 
   sku_name               = var.sku_name_fend
   zone_balancing_enabled = var.zoone_balancing_enabled_fend
-  vnet_subnet_id         = module.subnet_app_qc.subnet_id
+  vnet_subnet_id         = module.subnet_fend_qc.subnet_id
   docker_image_name      = var.docker_image_name_fend
 }
 
@@ -48,12 +48,12 @@ module "app_service_backend" {
 
   app_service_name      = var.app_service_name_bend
   app_service_plan_name = "asp-${var.app_service_name_bend}"
-  resource_group_name   = data.azurerm_resource_group.rg.name
-  location              = data.azurerm_resource_group.rg.location
+  resource_group_name   = data.azurerm_resource_group.rg_dev.name
+  location              = data.azurerm_resource_group.rg_dev.location
 
   sku_name               = var.sku_name_bend
   zone_balancing_enabled = var.zoone_balancing_enabled_bend
-  vnet_subnet_id         = module.subnet_app_qc.subnet_id
+  vnet_subnet_id         = module.subnet_bend_qc.subnet_id
   docker_image_name      = var.docker_image_name_bend
 
 }
@@ -65,8 +65,8 @@ module "redis_cache" {
   source = "../../modules/cache-for-redis"
 
   name                = var.redis_name
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
 
   sku_name            = var.redis_sku
   capacity            = var.redis_capacity
@@ -89,8 +89,8 @@ module "function_app_1" {
   function_name  = "func-container-premium"
   func_plan_name = "asp-func-container-premium"
 
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
 
   func_os_type        = "Linux"
   func_sku            = "EP1"
@@ -119,8 +119,8 @@ module "key_vault" {
 
 
   key_vault_name      = var.key_vault_name
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   tenant_id           = data.azurerm_client_config.current.tenant_id
   key_vault_sku_name  = var.key_vault_sku_name
 }
@@ -132,8 +132,8 @@ module "apim" {
   source = "../../modules/apim"
 
   name                = var.apim_name
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
 
   publisher_name  = var.apim_publisher_name
   publisher_email = var.apim_publisher_email
@@ -148,8 +148,8 @@ module "service_bus" {
   source = "../../modules/service-bus"
 
   name                         = var.service_bus_name
-  location                     = data.azurerm_resource_group.rg.location
-  resource_group_name          = data.azurerm_resource_group.rg.name
+  location                     = data.azurerm_resource_group.rg_dev.location
+  resource_group_name          = data.azurerm_resource_group.rg_dev.name
   capacity                     = var.service_bus_capacity
   sbus_sku_name                = var.sbus_sku_name
   premium_messaging_partitions = var.premium_messaging_partitions
@@ -161,8 +161,8 @@ module "cosmos_db" {
   source = "../../modules/cosmos-db"
 
   name                            = var.cosmos_db_name
-  resource_group_name             = data.azurerm_resource_group.rg.name
-  location                        = data.azurerm_resource_group.rg.location
+  resource_group_name             = data.azurerm_resource_group.rg_dev.name
+  location                        = data.azurerm_resource_group.rg_dev.location
   throughput                      = var.cosmos_db_throughput
   zone_redundant                  = var.cosmos_db_zone_redundant
   db_name                         = var.cosmos_db_database_name
@@ -182,8 +182,8 @@ module "postgresql" {
   source = "../../modules/postgresql"
 
   name                = var.postgresql_name
-  resource_group_name = data.azurerm_resource_group.rg.name
-  location            = data.azurerm_resource_group.rg.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
+  location            = data.azurerm_resource_group.rg_dev.location
 
   administrator_login    = var.postgresql_admin_login
   administrator_password = var.postgresql_admin_password
@@ -199,8 +199,8 @@ module "event_grid" {
   source = "../../modules/event-grid"
 
   name                = var.event_grid_name
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
 
   sku      = var.event_grid_sku
   capacity = var.event_grid_capacity
@@ -217,7 +217,7 @@ module "logic_app" {
 
   name                = var.logic_app_name
   location            = var.location_sc
-  resource_group_name = data.azurerm_resource_group.rg.name
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
 
   app_service_plan_name            = "asp-${var.logic_app_name}"
   sku_name                         = var.logic_app_sku
@@ -236,8 +236,8 @@ module "event_hub" {
   source = "../../modules/event-hub"
 
   name                = var.event_hub_name
-  location            = data.azurerm_resource_group.rg.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  location            = data.azurerm_resource_group.rg_dev.location
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
 
   sku      = var.event_hub_sku
   capacity = var.event_hub_capacity
@@ -254,7 +254,7 @@ module "linux_vm" {
 
   name                = var.vm_linux_name
   location            = var.location_qc
-  resource_group_name = data.azurerm_resource_group.rg.name
+  resource_group_name = data.azurerm_resource_group.rg_dev.name
   subnet_id           = module.subnet_pep_qc.subnet_id
 
   size           = var.vm_linux_size

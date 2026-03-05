@@ -1,0 +1,1 @@
+output "hub_id"  { value = azurerm_ai_foundry.hub.id }
