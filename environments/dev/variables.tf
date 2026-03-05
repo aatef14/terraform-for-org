@@ -111,7 +111,7 @@ variable "sku_name_fend" {
   type = string
 }
 
-variable "zoone_balancing_enabled_fend" {
+variable "zone_balancing_enabled_fend" {
   type = bool
 }
 
@@ -131,7 +131,7 @@ variable "sku_name_bend" {
   type = string
 }
 
-variable "zoone_balancing_enabled_bend" {
+variable "zone_balancing_enabled_bend" {
   type = bool
 }
 

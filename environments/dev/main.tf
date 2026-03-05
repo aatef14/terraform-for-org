@@ -5,7 +5,7 @@
 # locals are useful for values you want to reuse multiple times in this file
 locals {
   common_tags = {
-    Environment = "stg"
+    Environment = "dev"
   }
 }
 
@@ -38,7 +38,7 @@ module "app_service_frontend" {
   location              = data.azurerm_resource_group.rg_dev.location
 
   sku_name               = var.sku_name_fend
-  zone_balancing_enabled = var.zoone_balancing_enabled_fend
+  zone_balancing_enabled = var.zone_balancing_enabled_fend
   vnet_subnet_id         = module.subnet_fend_qc.subnet_id
   docker_image_name      = var.docker_image_name_fend
 }
@@ -52,7 +52,7 @@ module "app_service_backend" {
   location              = data.azurerm_resource_group.rg_dev.location
 
   sku_name               = var.sku_name_bend
-  zone_balancing_enabled = var.zoone_balancing_enabled_bend
+  zone_balancing_enabled = var.zone_balancing_enabled_bend
   vnet_subnet_id         = module.subnet_bend_qc.subnet_id
   docker_image_name      = var.docker_image_name_bend
 

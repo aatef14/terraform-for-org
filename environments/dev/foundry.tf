@@ -1,4 +1,6 @@
 # Configuration for AI Foundry Hub, Project, and associated AI Services
+# NOTE: AI Foundry Hub requires both Storage Account and Key Vault to be enabled.
+# Ensure var.enable_storage_account and var.enable_key_vault are set to true when using AI Foundry.
 
 # AI Foundry Hub
 module "ai_foundry_hub" {

@@ -35,16 +35,16 @@ storage_account_kind             = "StorageV2"
 
 # Azure Web app config
 # FrontEnd
-app_service_name_fend        = "app-1"
-sku_name_fend                = "value"
-zoone_balancing_enabled_fend = false
-docker_image_name_fend       = "value"
+app_service_name_fend       = "app-1"
+sku_name_fend               = "value"
+zone_balancing_enabled_fend = false
+docker_image_name_fend      = "value"
 
 # Backend
-app_service_name_bend        = "app-2"
-sku_name_bend                = "value"
-zoone_balancing_enabled_bend = false
-docker_image_name_bend       = "value"
+app_service_name_bend       = "app-2"
+sku_name_bend               = "value"
+zone_balancing_enabled_bend = false
+docker_image_name_bend      = "value"
 
 # Azure Function config
 func_image_name = "value"
