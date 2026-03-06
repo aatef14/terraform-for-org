@@ -3,13 +3,19 @@
 
 # For more information check github.com/aatef14/terraform-for-org/more-info/pdns.md
 
+
+#    - Anything before  ? is condtionation(true/false) 
+#    - Anything after  ? is true case
+#    - Anything after  : is false case
+
 locals {
   private_dns_zones = {
-    websites   = "privatelink.azurewebsites.net"
-    blob       = "privatelink.blob.core.windows.net"
-    file       = "privatelink.file.core.windows.net"
-    keyvault   = "privatelink.vaultcore.azure.net"
-    eventgrid  = "privatelink.eventgrid.azure.net"
+    # Code     = if true then "privatelink.azurewebsites.net" else null             
+    websites   = var.feature_toggles["app_service"] ? "privatelink.azurewebsites.net" : null
+    blob       = var.feature_toggles["storage_account"] ? "privatelink.blob.core.windows.net" : null
+    file       = var.feature_toggles["storage_account"] ? "privatelink.file.core.windows.net" : null
+    keyvault   = var.feature_toggles["key_vault"] ? "privatelink.vaultcore.azure.net" : null
+    eventgrid  = var.feature_toggles["event_grid"] ? "privatelink.eventgrid.azure.net" : null
     apim       = var.feature_toggles["apim"] ? "privatelink.azure-api.net" : null
     messaging  = var.feature_toggles["service_bus"] ? "privatelink.servicebus.windows.net" : null
     postgresql = var.feature_toggles["postgresql"] ? "privatelink.postgres.database.azure.com" : null

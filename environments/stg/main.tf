@@ -1,6 +1,7 @@
 # This is the Heart of Specific Environment configuration.
-# Use this to disable provisioning any unwanted services by selecting the module block 
-# and doing Ctrl + /, which will comment out the code.
+
+# To enable or disable any service, go to the terraform.tfvars file and change the value of the feature toggle
+
 # Local variables for common settings
 # locals are useful for values you want to reuse multiple times in this file
 locals {
@@ -15,6 +16,17 @@ locals {
 
 # Storage account config
 module "storage_account" {
+
+  # Code Explanation:
+  #    - for_each = var.feature_toggles["storage_account"] ? var.storage_account_config : {}
+  #    - This is a for_each expression that iterates over the storage_account_config map
+  #    - var.feature_toggles["storage_account"] is a boolean value that determines whether to enable storage account
+  #    - var.storage_account_config is a map of storage account configurations
+  #    - The expression returns a map of storage account configurations if storage account is enabled, otherwise returns an empty map
+  #    - Anything before  ? is condtionation(true/false) 
+  #    - Anything after  ? is true case
+  #    - Anything after  : is false case
+  #    - Anything after  : is false case
   for_each = var.feature_toggles["storage_account"] ? var.storage_account_config : {}
   source   = "../../modules/storage-account"
 
@@ -30,7 +42,7 @@ module "storage_account" {
 
 # WEB APP SERVICE CONFIG - VNET INTEGRATION - optional
 module "app_service" {
-  for_each = var.app_service_config
+  for_each = var.feature_toggles["app_service"] ? var.app_service_config : {}
   source   = "../../modules/app-service"
 
   app_service_name      = each.value.app_service_name
@@ -40,7 +52,7 @@ module "app_service" {
 
   sku_name               = each.value.sku_name
   zone_balancing_enabled = each.value.zone_balancing_enabled
-  vnet_subnet_id         = local.subnets[each.value.subnet_key] 
+  vnet_subnet_id         = local.subnets[each.value.subnet_key]
   docker_image_name      = each.value.docker_image_name
   tags                   = local.common_tags
 }
@@ -48,20 +60,20 @@ module "app_service" {
 
 # Azure Cache for Redis config
 module "redis_cache" {
-  count  = var.feature_toggles["redis"] ? 1 : 0
-  source = "../../modules/cache-for-redis"
+  for_each = var.feature_toggles["redis"] ? var.redis_config : {}
+  source   = "../../modules/cache-for-redis"
 
-  name                = var.redis_name
+  name                = each.value.name
   location            = data.azurerm_resource_group.rg_dev.location
   resource_group_name = data.azurerm_resource_group.rg_dev.name
 
-  sku_name            = var.redis_sku
-  capacity            = var.redis_capacity
-  family              = var.redis_family
+  sku_name            = each.value.sku_name
+  capacity            = each.value.capacity
+  family              = each.value.family
   minimum_tls_version = "1.2"
 
-  shard_count         = var.redis_shard_count
-  replicas_per_master = var.redis_replicas_per_master
+  shard_count         = each.value.shard_count
+  replicas_per_master = each.value.replicas_per_master
 
   tags = local.common_tags
 }
@@ -72,24 +84,24 @@ module "function_app" {
   for_each = var.feature_toggles["function_app"] ? var.function_app_config : {}
   source   = "../../modules/function-app-container"
 
-  function_name  = each.value.function_name
-  func_plan_name = "asp-${each.value.function_name}"
+  function_name  = each.value.name
+  func_plan_name = "asp-${each.value.name}"
 
   location            = each.value.location
   resource_group_name = data.azurerm_resource_group.rg_dev.name
 
-  func_os_type        = each.value.func_os_type
-  func_sku            = each.value.func_sku
-  func_zone_balancing = each.value.func_zone_balancing
+  func_os_type = var.function_app_config["fa_1"].os_type
+  func_sku = var.function_app_config["fa_1"].sku
+  func_zone_balancing = var.function_app_config["fa_1"].zone_balancing
 
-  func_storage_account_name     = each.value.func_storage_account_name
-  func_storage_account_tier     = each.value.func_storage_account_tier
-  func_account_replication_type = each.value.func_account_replication_type
-  func_account_kind             = each.value.func_account_kind
+  func_storage_account_name     = var.function_app_config["fa_1"].storage_account_name
+  func_storage_account_tier     = var.function_app_config["fa_1"].storage_account_tier
+  func_account_replication_type = var.function_app_config["fa_1"].account_replication_type
+  func_account_kind             = var.function_app_config["fa_1"].account_kind
 
-  func_image_name   = each.value.func_image_name
-  func_image_tag    = each.value.func_image_tag
-  func_registry_url = each.value.func_registry_url
+  func_image_name   = var.function_app_config["fa_1"].image_name
+  func_image_tag    = var.function_app_config["fa_1"].image_tag
+  func_registry_url = var.function_app_config["fa_1"].registry_url
 
   vnet_subnet_id = local.subnets[each.value.subnet_key]
   tags           = local.common_tags
@@ -112,101 +124,101 @@ module "key_vault" {
 
 # Azure API Management
 module "apim" {
-  count  = var.feature_toggles["apim"] ? 1 : 0
-  source = "../../modules/apim"
+  for_each = var.feature_toggles["apim"] ? var.apim_config : {}
+  source   = "../../modules/apim"
 
-  name                = var.apim_name
+  name                = each.value.name
   location            = data.azurerm_resource_group.rg_dev.location
   resource_group_name = data.azurerm_resource_group.rg_dev.name
 
-  publisher_name  = var.apim_publisher_name
-  publisher_email = var.apim_publisher_email
-  sku_name        = var.sku_name
+  publisher_name  = each.value.publisher_name
+  publisher_email = each.value.publisher_email
+  sku_name        = each.value.sku_name
 
   depends_on = [module.service_bus]
 }
 
 # Azure Service Bus
 module "service_bus" {
-  count  = var.feature_toggles["service_bus"] ? 1 : 0
-  source = "../../modules/service-bus"
+  for_each = var.feature_toggles["service_bus"] ? var.service_bus_config : {}
+  source   = "../../modules/service-bus"
 
-  name                         = var.service_bus_name
+  name                         = each.value.name
   location                     = data.azurerm_resource_group.rg_dev.location
   resource_group_name          = data.azurerm_resource_group.rg_dev.name
-  capacity                     = var.service_bus_capacity
-  sbus_sku_name                = var.sbus_sku_name
-  premium_messaging_partitions = var.premium_messaging_partitions
+  capacity                     = each.value.capacity
+  sbus_sku_name                = each.value.sku_name
+  premium_messaging_partitions = each.value.premium_messaging_partitions
 }
 
 # Azure Cosmos DB
 module "cosmos_db" {
-  count  = var.feature_toggles["cosmos_db"] ? 1 : 0
-  source = "../../modules/cosmos-db"
+  for_each = var.feature_toggles["cosmos_db"] ? var.cosmos_db_config : {}
+  source   = "../../modules/cosmos-db"
 
-  name                            = var.cosmos_db_name
+  name                            = each.value.name
   resource_group_name             = data.azurerm_resource_group.rg_dev.name
-  location                        = data.azurerm_resource_group.rg_dev.location
-  throughput                      = var.cosmos_db_throughput
-  zone_redundant                  = var.cosmos_db_zone_redundant
-  db_name                         = var.cosmos_db_database_name
-  enable_multiple_write_locations = var.cosmos_db_enable_multiple_write_locations
-  cosmos_db_offer_type            = var.cosmos_db_offer_type
-  cosmos_db_kind                  = var.cosmos_db_kind
-  cosmos_db_free_tier_enabled     = var.cosmos_db_free_tier_enabled
-  backup_type                     = var.cosmos_db_backup_type
-  backup_interval_in_minutes      = var.cosmos_db_backup_interval_in_minutes
-  backup_retention_in_hours       = var.cosmos_db_backup_retention_in_hours
-  backup_storage_redundancy       = var.cosmos_db_backup_storage_redundancy
+  location                        = each.value.location
+  throughput                      = each.value.throughput
+  zone_redundant                  = each.value.zone_redundant
+  db_name                         = each.value.database_name
+  enable_multiple_write_locations = each.value.enable_multiple_write_locations
+  cosmos_db_offer_type            = each.value.offer_type
+  cosmos_db_kind                  = each.value.kind
+  cosmos_db_free_tier_enabled     = each.value.free_tier_enabled
+  backup_type                     = each.value.backup_type
+  backup_interval_in_minutes      = each.value.backup_interval_in_minutes
+  backup_retention_in_hours       = each.value.backup_retention_in_hours
+  backup_storage_redundancy       = each.value.backup_storage_redundancy
 }
 
 # Azure PostgreSQL Flexible Server
 module "postgresql" {
-  count  = var.feature_toggles["postgresql"] ? 1 : 0
-  source = "../../modules/postgresql"
+  for_each = var.feature_toggles["postgresql"] ? nonsensitive(var.postgresql_config) : {}
+  source   = "../../modules/postgresql"
 
-  name                = var.postgresql_name
+  name                = each.value.name
   resource_group_name = data.azurerm_resource_group.rg_dev.name
   location            = data.azurerm_resource_group.rg_dev.location
 
-  administrator_login    = var.postgresql_admin_login
-  administrator_password = var.postgresql_admin_password
-  sku_name               = var.postgresql_sku
-  storage_mb             = var.postgresql_storage_mb
+  administrator_login    = each.value.administrator_login
+  administrator_password = each.value.administrator_password
+  sku_name               = each.value.sku_name
+  storage_mb             = each.value.storage_mb
 
   tags = local.common_tags
 }
 
 # Azure Event Grid Namespace
 module "event_grid" {
-  count  = var.feature_toggles["event_grid"] ? 1 : 0
-  source = "../../modules/event-grid"
+  for_each = var.feature_toggles["event_grid"] ? var.event_grid_config : {}
+  source   = "../../modules/event-grid"
 
-  name                = var.event_grid_name
+  name                = each.value.name
   location            = data.azurerm_resource_group.rg_dev.location
   resource_group_name = data.azurerm_resource_group.rg_dev.name
 
-  sku      = var.event_grid_sku
-  capacity = var.event_grid_capacity
+  sku      = each.value.sku
+  capacity = each.value.capacity
 
-  public_network_access_enabled = var.event_grid_public_network_access
+  public_network_access_enabled = each.value.public_network_access_enabled
 
   tags = local.common_tags
 }
 
 # Azure Logic App Standard
 module "logic_app" {
-  count  = var.feature_toggles["logic_app"] ? 1 : 0
-  source = "../../modules/logic-app"
+  for_each = var.feature_toggles["logic_app"] ? var.logic_app_config : {}
+  source   = "../../modules/logic-app"
 
-  name                = var.logic_app_name
+  name                = each.value.name
   location            = var.location_sc
   resource_group_name = data.azurerm_resource_group.rg_dev.name
 
-  app_service_plan_name            = "asp-${var.logic_app_name}"
-  sku_name                         = var.logic_app_sku
-  zone_balancing_enabled           = var.logic_app_zone_balancing
-  storage_account_name             = var.logic_app_storage_name
+  app_service_plan_name            = "asp-${each.value.name}"
+  sku_name                         = each.value.sku_name
+  zone_balancing_enabled           = each.value.zone_balancing_enabled
+  storage_account_name             = each.value.storage_account_name
   storage_account_tier             = "Standard"
   storage_account_replication_type = "LRS"
   virtual_network_subnet_id        = module.subnet_logic_sc.subnet_id
@@ -216,36 +228,37 @@ module "logic_app" {
 
 # Azure Event Hub Namespace
 module "event_hub" {
-  count  = var.feature_toggles["event_hub"] ? 1 : 0
-  source = "../../modules/event-hub"
+  for_each = var.feature_toggles["event_hub"] ? var.event_hub_config : {}
+  source   = "../../modules/event-hub"
 
-  name                = var.event_hub_name
+  name                = each.value.name
   location            = data.azurerm_resource_group.rg_dev.location
   resource_group_name = data.azurerm_resource_group.rg_dev.name
 
-  sku      = var.event_hub_sku
-  capacity = var.event_hub_capacity
+  sku      = each.value.sku
+  capacity = each.value.capacity
 
-  public_network_access_enabled = var.event_hub_public_network_access
+  public_network_access_enabled = each.value.public_network_access_enabled
 
   tags = local.common_tags
 }
 
 # Azure Linux Virtual Machine
 module "linux_vm" {
-  source = "../../modules/linux-vm"
+  for_each = var.feature_toggles["vm_linux"] ? nonsensitive(var.vm_linux_config) : {}
+  source   = "../../modules/linux-vm"
 
-  name                = var.vm_linux.name
+  name                = each.value.name
   resource_group_name = data.azurerm_resource_group.rg_dev.name
   location            = data.azurerm_resource_group.rg_dev.location
 
-  size           = var.vm_linux.size
-  admin_username = var.vm_linux.admin_username
-  admin_password = var.vm_linux.admin_password
+  size           = each.value.size
+  admin_username = each.value.admin_username
+  admin_password = each.value.admin_password
 
-  subnet_id = module.subnet_pep_qc.subnet_id
+  subnet_id = local.subnets[each.value.subnet_key] # e.g "pep_qc" check out local.subnets in vnet.tf file
 
-  source_image = var.vm_linux.source_image
+  source_image = each.value.source_image
 
   tags = local.common_tags
 }

@@ -13,6 +13,7 @@ location2           = ""
 # MODULE TOGGLES (Set to false to prevent creation)
 feature_toggles = {
   storage_account = false
+  app_service     = false
   key_vault       = false
   apim            = false
   service_bus     = false
@@ -59,7 +60,7 @@ app_service_config = {
     zone_balancing_enabled = false
     docker_image_name      = "mcr.microsoft.com/appsvc/staticsite"
     location               = "qatarcentral"
-    subnet_key             = "bend_qc"
+    subnet_key             = "bend_qc" # check out local.subnets in vnet.tf file
   }
 }
 
@@ -69,30 +70,34 @@ app_service_config = {
 function_app_config = {
 
   function_1 = {
-    function_name                 = "func-container-premium"
-    func_plan_name                = "asp-func-container-premium"
-    func_os_type                  = "Linux"
-    func_sku                      = "EP1"
-    func_zone_balancing           = false
-    func_storage_account_name     = "stfuncqeqispstg01"
-    func_storage_account_tier     = "Standard"
-    func_account_replication_type = "LRS"
-    func_account_kind             = "StorageV2"
-    func_image_name               = "appsvc/staticsite"
-    func_image_tag                = "latest"
-    func_registry_url             = "https://mcr.microsoft.com"
+    name                 = "func-container-premium"
+    os_type                  = "Linux"
+    sku                      = "EP1"
+    zone_balancing           = false
+    storage_account_name     = "stfuncqeqispstg01"
+    storage_account_tier     = "Standard"
+    account_replication_type = "LRS"
+    account_kind             = "StorageV2"
+    image_name               = "appsvc/staticsite"
+    image_tag                = "latest"
+    registry_url             = "https://mcr.microsoft.com"
     location                      = "swedencentral"
-    subnet_key                    = "func_sc"
+    subnet_key                    = "func_sc" # check out local.subnets in vnet.tf file 
   }
 }
 
 
 # Redis Cache Config
-redis_name        = "azure-cache-for-redis"
-redis_sku         = "Premium"
-redis_capacity    = 1
-redis_family      = "P"
-redis_shard_count = 1
+redis_config = {
+  "redis-01" = {
+    name                = "azure-cache-for-redis"
+    sku_name            = "Premium"
+    capacity            = 1
+    family              = "P"
+    shard_count         = 1
+    replicas_per_master = 1
+  }
+}
 
 # Azure Key Vault Config
 key_vault = {
@@ -105,77 +110,105 @@ key_vault = {
 
 
 # Azure APIM config
-apim_name            = "azure-apim"
-apim_publisher_name  = "Qatar Energy Dev"
-apim_publisher_email = "your-email@company.com"
-sku_name             = "Basic_1"
+apim_config = {
+  "apim-01" = {
+    name            = "azure-apim"
+    publisher_name  = "Qatar Energy Dev"
+    publisher_email = "your-email@company.com"
+    sku_name        = "Basic_1"
+  }
+}
 
 # Postgresql config
-postgresql_name           = "azure-psql"
-postgresql_admin_login    = "psqladmin"
-postgresql_admin_password = "Password1234!" # Recommendation: use a random string
-postgresql_sku            = "GP_Standard_D2ds_v5"
-postgresql_storage_mb     = 131072
+postgresql_config = {
+  "psql-01" = {
+    name                   = "azure-psql"
+    administrator_login    = "psqladmin"
+    administrator_password = "Password1234!" # Recommendation: use a random string
+    sku_name               = "GP_Standard_D2ds_v5"
+    storage_mb             = 131072
+  }
+}
 
 # Service Bus namespace config #sweden central
-service_bus_name             = "azure-service-bus"
-service_bus_capacity         = 0
-premium_messaging_partitions = 0
-sbus_sku_name                = "Basic"
+service_bus_config = {
+  "sb-01" = {
+    name                         = "azure-service-bus"
+    capacity                     = 0
+    sku_name                     = "Basic"
+    premium_messaging_partitions = 0
+  }
+}
 
 # Event Grid config #sweden central
-event_grid_name                  = "azure-event-grid"
-event_grid_sku                   = "Standard"
-event_grid_capacity              = 1
-event_grid_public_network_access = false
+event_grid_config = {
+  "eg-01" = {
+    name                          = "azure-event-grid"
+    sku                           = "Standard"
+    capacity                      = 1
+    public_network_access_enabled = false
+  }
+}
 
 # Event Hub config
-event_hub_name                  = "azure-event-hub"
-event_hub_sku                   = "Standard"
-event_hub_capacity              = 3
-event_hub_public_network_access = false
+event_hub_config = {
+  "eh-01" = {
+    name                          = "azure-event-hub"
+    sku                           = "Standard"
+    capacity                      = 3
+    public_network_access_enabled = false
+  }
+}
 
 # Logic App Standard config #sweden central
-logic_app_name           = "azure-logic-app"
-logic_app_plan_name      = "asp-logic-qe-qisp-stg-sc-01"
-logic_app_sku            = "WS1"
-logic_app_zone_balancing = false
-logic_app_storage_name   = "stlogicqeqispstgsc01"
+logic_app_config = {
+  "logic-01" = {
+    name                   = "azure-logic-app"
+    sku_name               = "WS1"
+    zone_balancing_enabled = false
+    storage_account_name   = "stlogicqeqispstgsc01"
+  }
+}
 
 # Linux VM config
-vm_linux = {
+vm_linux_config = {
+  "vm-01" = {
+    name           = "vm-dev-linux-01"
+    size           = "Standard_D4s_v4"
+    admin_username = "azureuser"
+    admin_password = "Password123!"
+    subnet_id = "pep_qc" # check out local.subnets in vnet.tf file
 
-  name           = "vm-dev-linux-01"
-  size           = "Standard_D4s_v4"
-  admin_username = "azureuser"
-  admin_password = "Password123!"
-
-  source_image = {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
-    version   = "latest"
+    source_image = {
+      publisher = "Canonical"
+      offer     = "0001-com-ubuntu-server-jammy"
+      sku       = "22_04-lts"
+      version   = "latest"
+    }
   }
-
 }
 
 
 
 
 # COSMOS DB NO SQL config
-cosmos_db_name                            = "azure-cosmo-nosql"
-cosmos_db_throughput                      = 1000
-cosmos_db_location                        = "uaenorth"
-cosmos_db_kind                            = "GlobalDocumentDB"
-cosmos_db_offer_type                      = "Standard"
-cosmos_db_free_tier_enabled               = true
-cosmos_db_database_name                   = "enterprise_memory"
-cosmos_db_zone_redundant                  = false
-cosmos_db_enable_multiple_write_locations = false
-cosmos_db_backup_type                     = "Periodic"
-cosmos_db_backup_storage_redundancy       = "Local"
-cosmos_db_backup_interval_in_minutes      = 60
-cosmos_db_backup_retention_in_hours       = 0
+cosmos_db_config = {
+  "cosmos-01" = {
+    name                            = "azure-cosmo-nosql"
+    throughput                      = 1000
+    location                        = "uaenorth"
+    kind                            = "GlobalDocumentDB"
+    offer_type                      = "Standard"
+    free_tier_enabled               = true
+    database_name                   = "enterprise_memory"
+    zone_redundant                  = false
+    enable_multiple_write_locations = false
+    backup_type                     = "Periodic"
+    backup_storage_redundancy       = "Local"
+    backup_interval_in_minutes      = 60
+    backup_retention_in_hours       = 0
+  }
+}
 
 
 
