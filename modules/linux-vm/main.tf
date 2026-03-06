@@ -12,6 +12,19 @@ resource "azurerm_network_interface" "this" {
   tags = var.tags
 }
 
+resource "azurerm_network_security_group" "this" {
+  name                = "nsg-${var.name}"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+
+  tags = var.tags
+}
+
+resource "azurerm_network_interface_security_group_association" "this" {
+  network_interface_id      = azurerm_network_interface.this.id
+  network_security_group_id = azurerm_network_security_group.this.id
+}
+
 resource "azurerm_linux_virtual_machine" "this" {
   name                = var.name
   resource_group_name = var.resource_group_name
@@ -32,12 +45,12 @@ resource "azurerm_linux_virtual_machine" "this" {
     disk_size_gb         = var.os_disk_size_gb
   }
 
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
-    version   = "latest"
-  }
+source_image_reference {
+  publisher = var.source_image.publisher
+  offer     = var.source_image.offer
+  sku       = var.source_image.sku
+  version   = var.source_image.version
+}
 
   tags = var.tags
 }

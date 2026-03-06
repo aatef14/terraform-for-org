@@ -26,3 +26,8 @@ variable "account_kind" {
   type        = string
   description = "Storage account kind"
 }
+
+variable "tags" {
+  type = map(string)
+  default = {}
+}

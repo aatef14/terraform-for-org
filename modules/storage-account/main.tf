@@ -13,4 +13,5 @@ resource "azurerm_storage_account" "this" {
   shared_access_key_enabled     = true
 
   min_tls_version = "TLS1_2"
+  tags = var.tags
 }

@@ -14,4 +14,5 @@ resource "azurerm_key_vault" "this" {
   purge_protection_enabled   = false
 
   public_network_access_enabled = false
+  tags = var.tags
 }

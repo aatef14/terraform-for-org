@@ -29,5 +29,6 @@ resource "azurerm_linux_web_app" "this" {
       docker_image_name = var.docker_image_name
     }
   }
+  tags = var.tags
 }
 

@@ -18,3 +18,9 @@ variable "key_vault_sku_name" {
   type    = string
   default = "standard"
 }
+
+variable "tags" {
+  type = map(string)
+  default = {}
+}
+
