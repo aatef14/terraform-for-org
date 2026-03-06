@@ -40,7 +40,7 @@ module "app_service" {
 
   sku_name               = each.value.sku_name
   zone_balancing_enabled = each.value.zone_balancing_enabled
-  vnet_subnet_id         = local.subnets[each.value.subnet_key]
+  vnet_subnet_id         = local.subnets[each.value.subnet_key] 
   docker_image_name      = each.value.docker_image_name
   tags                   = local.common_tags
 }

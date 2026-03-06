@@ -1,6 +1,9 @@
 # This file provides the ACTUAL VALUES for the variables.
 # It is the only file you usually need to change when adding or removing apps.
 
+# For more information on skus check github.com/aatef14/terraform-for-org/more-info/sku.md
+# For more information on variables check github.com/aatef14/terraform-for-org/more-info/variables.md
+
 # Provider Authentication
 subscription_id     = "sub-id-here"
 resource_group_name = "env-wise-resourceGroup"
@@ -8,18 +11,20 @@ location            = "eastus"
 location2           = ""
 
 # MODULE TOGGLES (Set to false to prevent creation)
-enable_storage_account = false
-enable_key_vault       = false
-enable_apim            = false
-enable_service_bus     = false
-enable_cosmos_db       = false
-enable_redis           = false
-enable_postgresql      = false
-enable_event_grid      = false
-enable_logic_app       = false
-enable_event_hub       = false
-enable_vm_linux        = false
-enable_function_app    = false
+feature_toggles = {
+  storage_account = false
+  key_vault       = false
+  apim            = false
+  service_bus     = false
+  cosmos_db       = false
+  redis           = false
+  postgresql      = false
+  event_grid      = false
+  logic_app       = false
+  event_hub       = false
+  vm_linux        = false
+  function_app    = false
+}
 
 # AI FEATURE TOGGLES
 enable_ai_foundry = false
@@ -27,27 +32,59 @@ enable_ai_search  = false
 enable_openai     = false
 
 
-# Storage Account Details
-storage_account_name_dev         = "storage-account"
-storage_account_tier             = "Standard"
-storage_account_replication_type = "LRS"
-storage_account_kind             = "StorageV2"
+# Storage Account config
+storage_account_config = {
+  "st-1" = {
+    storage_account_name             = "value"
+    storage_account_tier             = "Standard"
+    storage_account_replication_type = "LRS"
+    storage_account_kind             = "StorageV2"
+
+  }
+}
 
 # Azure Web app config
-# FrontEnd
-app_service_name_fend       = "app-1"
-sku_name_fend               = "value"
-zone_balancing_enabled_fend = false
-docker_image_name_fend      = "value"
+app_service_config = {
+  "fend" = {
+    app_service_name       = "app-1"
+    sku_name               = "value"
+    zone_balancing_enabled = false
+    docker_image_name      = "mcr.microsoft.com/appsvc/staticsite"
+    location               = "qatarcentral"
+    subnet_key             = "fend_qc"
+  }
+  "bend" = {
+    app_service_name       = "app-1"
+    sku_name               = "value"
+    zone_balancing_enabled = false
+    docker_image_name      = "mcr.microsoft.com/appsvc/staticsite"
+    location               = "qatarcentral"
+    subnet_key             = "bend_qc"
+  }
+}
 
-# Backend
-app_service_name_bend       = "app-2"
-sku_name_bend               = "value"
-zone_balancing_enabled_bend = false
-docker_image_name_bend      = "value"
 
 # Azure Function config
-func_image_name = "value"
+
+function_app_config = {
+
+  function_1 = {
+    function_name                 = "func-container-premium"
+    func_plan_name                = "asp-func-container-premium"
+    func_os_type                  = "Linux"
+    func_sku                      = "EP1"
+    func_zone_balancing           = false
+    func_storage_account_name     = "stfuncqeqispstg01"
+    func_storage_account_tier     = "Standard"
+    func_account_replication_type = "LRS"
+    func_account_kind             = "StorageV2"
+    func_image_name               = "appsvc/staticsite"
+    func_image_tag                = "latest"
+    func_registry_url             = "https://mcr.microsoft.com"
+    location                      = "swedencentral"
+    subnet_key                    = "func_sc"
+  }
+}
 
 
 # Redis Cache Config
@@ -58,8 +95,13 @@ redis_family      = "P"
 redis_shard_count = 1
 
 # Azure Key Vault Config
-key_vault_name     = "key-cault"
-key_vault_sku_name = "standard"
+key_vault = {
+  "kv_1" = {
+    key_vault_name = "value"
+    key_vault_sku  = "value"
+
+  }
+}
 
 
 # Azure APIM config
@@ -101,10 +143,21 @@ logic_app_zone_balancing = false
 logic_app_storage_name   = "stlogicqeqispstgsc01"
 
 # Linux VM config
-vm_linux_name           = "vm-linux"
-vm_linux_size           = "Standard_D4s_v4"
-vm_linux_admin_username = "azureuser"
-vm_linux_admin_password = "Password123!" # Recommendation: Change this immediately
+vm_linux = {
+
+  name           = "vm-dev-linux-01"
+  size           = "Standard_D4s_v4"
+  admin_username = "azureuser"
+  admin_password = "Password123!"
+
+  source_image = {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
+    version   = "latest"
+  }
+
+}
 
 
 
@@ -123,22 +176,6 @@ cosmos_db_backup_type                     = "Periodic"
 cosmos_db_backup_storage_redundancy       = "Local"
 cosmos_db_backup_interval_in_minutes      = 60
 cosmos_db_backup_retention_in_hours       = 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -166,9 +203,7 @@ subnet_apim_qc_prefix = ["/28"]
 subnet_db_qc_name   = "snet-db-qe-qisp-stg-qc-01"
 subnet_db_qc_prefix = ["/28"]
 
-# subnet vm qc
-subnet_vm_qc_name   = "snet-vm-qe-qisp-stg-qc-01"
-subnet_vm_qc_prefix = ["/28"]
+
 
 
 # VNET_Sweden_Central

@@ -48,17 +48,17 @@ Because resources use private IPs, we need a way to translate names (e.g., `myse
 
 ---
 
-### 📂 Why separate files (`vnet.tf`, `pdns.tf`, `pep.tf`, `data_s.tf`)?
+### 📂 Why separate files (`vnet.tf`, `pdns.tf`, `pep.tf`, `data_source.tf`)?
 
-We use a **Functional Separation** approach for environment files to maintain clarity and prevent `main.tf` from becoming unmanageable:
+We use a **Functional Separation** approach to maintain clarity and prevent `main.tf` from becoming unmanageable:
 
 | File | Purpose | Why separate? |
 | :--- | :--- | :--- |
-| **`vnet.tf`** | Virtual Networks and Subnets | This is the **Foundation**. Networking changes are high-risk; keeping them separate prevents accidental modification while working on apps. |
-| **`pdns.tf`** | Private DNS Zones | Managed as **Shared Infrastructure**. Multiple services (Logic Apps, Web Apps, SQL) often share the same DNS zone. Separation allows for cleaner VNet link management. |
-| **`pep.tf`** | Private Endpoints | The **Security Map**. This file acts as a central registry of how services are linked to the network. It's easier to audit security when all PEPs are in one place. |
-| **`data_s.tf`** | Data/Storage Services | Separates **Data from Compute**. Services like Storage Accounts or Databases have different lifecycles than Apps. |
-| **`main.tf`** | Compute & Logic | Focuses on **Applications** (Logic Apps, Web Apps, Functions). This is where the business logic "lives". |
+| **`vnet.tf`** | VNets, Subnets, and Subnet Map | This is the **Foundation**. Networking changes are high-risk. This file also contains the `local.subnets` map used for dynamic placement. |
+| **`pdns.tf`** | Private DNS Zones | Managed as **Shared Infrastructure**. Links to both regional VNets to ensure services resolve across the entire organization. |
+| **`pep.tf`** | Private Endpoints | The **Security Map**. Central registry of how services (Web Apps, SQL, AI) are linked to the network. |
+| **`data_source.tf`** | Existing Resource Groups/PNZs | Separation of concerns for resources managed outside of this specific Terraform workspace. |
+| **`main.tf`** | Compute & Logic | Focuses on **Applications** (Web Apps, Functions, KeyVault). This is where the business logic "lives". |
 
 ---
 
@@ -73,24 +73,35 @@ Our **`linux-vm`** module is configured for high security:
 ## 🚀 How to Provision Resources
 *For users who just want to create resources.*
 
-In this template, each application is managed as a **dedicated module block**. This provides granular control over individual SKUs and networking settings for every instance.
+In this template, most applications are managed using **`for_each` maps**. This provides extreme scalability while maintaining granular control over individual settings.
 
 ### 1. The Toggle System
-In `environments/dev/terraform.tfvars`, you can turn entire services on or off using **Feature Toggles**:
+In `terraform.tfvars`, turn entire categories on or off using **Feature Toggles**:
 ```hcl
-enable_logic_app    = true   # Created
-enable_vm_linux     = false  # Skipped
-enable_event_hub    = true   # Created
+feature_toggles = {
+  storage_account = true
+  function_app     = true
+  # ...
+}
 ```
 
-### 2. Variable Overrides
-Update the values in `terraform.tfvars` to change settings. For example:
+### 2. Dynamic Placement (The Subnet Map)
+When adding an app, you simply specify its `subnet_key`. The system automatically looks up the correct Resource ID from the map in `vnet.tf`.
+
+### 3. Adding an Instance
+To add a new Web App, just add an entry to the `app_service_config` map in `terraform.tfvars`:
 ```hcl
-event_hub_sku      = "Standard"
-event_hub_capacity = 3  # Set Throughput Units
+app_service_config = {
+  "new-app" = {
+    app_service_name       = "qe-new-api"
+    sku_name               = "P1v3"
+    subnet_key             = "bend_qc"
+    # ...
+  }
+}
 ```
 
-### 3. Deployment Steps
+### 4. Deployment Steps
 1. Navigate to `environments/dev/`.
 2. Run `terraform init`.
 3. Run `terraform plan` to audit changes.
@@ -98,44 +109,32 @@ event_hub_capacity = 3  # Set Throughput Units
 
 ---
 
-## 🛠️ How to Add New Service Modules
+## 🛠️ Development & Extension
 *For Terraform Developers extending the template.*
-
-### 🌳 Branching Strategy (MANDATORY)
-Before starting any work on a new module or feature, ALWAYS create a separate feature branch:
-`git checkout -b feature-<module-name-or-headline>`
-
-**Never push directly to `main`.** Always merge via Pull Request in the GitHub Portal.
 
 ### Step 1: Create the Module
 1. Create a new folder in `modules/my-new-service/`.
-2. Add `main.tf` (resource logic), `variables.tf` (inputs), and `outputs.tf`.
+2. Define `main.tf`, `variables.tf`, and `outputs.tf`.
 
-### Step 2: Declare the Variable
-1. Go to `environments/dev/variables.tf`.
-2. Define the configuration variables needed for your service.
+### Step 2: Update Data Contract
+Update `environments/dev/variables.tf` to include a map variable for your new service type.
 
-### Step 3: Link in Main
-1. Go to `environments/dev/main.tf` (or `data_s.tf` for data/storage).
-2. Add the unique module block:
-   ```hcl
-   module "my_new_service" {
-     source = "../../modules/my-new-service"
-     name   = var.my_new_service_name
-     # ... Pass other variables
-   }
-   ```
+### Step 3: Integrated Loop
+Add a `module` block in `main.tf` using `for_each` that iterates over your new map. Always use the `local.subnets` map for network integration to keep the code clean.
 
 ---
 
 ## 💡 Key Design Patterns
 
-*   **Granular Control**: We use individual module blocks instead of loops. This allows you to set a unique SKU for "App A" without affecting "App B".
+*   **Scale-via-Data**: We use `for_each` loops instead of static blocks. This allows you to scale by editing `.tfvars` without modifying core logic.
+*   **Avoid Numeric Indices**: We use name-based keys (e.g., `["fend"]`) instead of `[0]` to prevent accidental resource destruction during shifts.
 *   **Decoupling**: We separate **Compute**, **Network**, and **Security** logic into split files for clarity and lower risk.
-*   **Shorthand Modules**: Use `pdns` and `pep` modules for clean, readable code in your environment files.
 *   **Auto-Naming**: Standardized prefixes (e.g., `pe-`, `st-`) are used within modules to ensure compliance.
 
 ---
 
 ## 📖 Reference Guides
-*   **[SKU_GUIDE.md](file:///c:/Users/MohammedAatef/Desktop/Project/terraform-template%20-%20Copy/SKU_GUIDE.md)**: Look here for a full list of valid SKUs and Tiers.
+*   **[Variable & Scaling Architecture](more-info/variables.md)**
+*   **[SKU Reference Guide](more-info/sku.md)**
+*   **[Private DNS & PEP Flow](more-info/pdns.md)**
+*   **[AI Foundry Hub Guide](more-info/foundry.md)**

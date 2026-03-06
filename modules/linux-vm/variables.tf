@@ -1,55 +1,66 @@
 variable "name" {
-  description = "The name of the virtual machine"
   type        = string
-}
-
-variable "location" {
-  description = "The Azure region"
-  type        = string
+  description = "VM name"
 }
 
 variable "resource_group_name" {
-  description = "The name of the resource group"
-  type        = string
+  type = string
 }
 
-variable "subnet_id" {
-  description = "The ID of the subnet to attach the VM to"
-  type        = string
+variable "location" {
+  type = string
 }
 
 variable "size" {
-  description = "The size of the virtual machine"
-  type        = string
-  default     = "Standard_D4s_v4"
+  type    = string
+  default = "Standard_D4s_v4"
 }
 
 variable "admin_username" {
-  description = "The admin username for the VM"
-  type        = string
-  default     = "azureuser"
+  type    = string
+  default = "azureuser"
 }
 
 variable "admin_password" {
-  description = "The admin password for the VM"
-  type        = string
-  sensitive   = true
+  type      = string
+  sensitive = true
+}
+
+variable "subnet_id" {
+  type = string
 }
 
 variable "os_disk_storage_account_type" {
-  description = "The storage account type for the OS disk"
-  type        = string
-  default     = "StandardSSD_LRS"
+  type    = string
+  default = "Premium_LRS"
 }
 
 variable "os_disk_size_gb" {
-  description = "The size of the OS disk in GB"
-  type        = number
-  default     = 256
+  type    = number
+  default = 128
 }
 
 variable "tags" {
-  description = "Tags for the resources"
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
+}
+
+variable "source_image" {
+
+  type = object({
+    publisher = string
+    offer     = string
+    sku       = string
+    version   = string
+  })
+
+  description = "VM source image configuration"
+
+  default = {
+    publisher = "Canonical"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22_04-lts"
+    version   = "latest"
+  }
+
 }
