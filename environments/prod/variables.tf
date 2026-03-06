@@ -27,6 +27,7 @@ variable "feature_toggles" {
 
   default = {
     storage_account = true
+    app_service     = true
     key_vault       = true
     apim            = true
     service_bus     = true
@@ -85,43 +86,32 @@ variable "app_service_config" {
 
 variable "function_app_config" {
   type = map(object({
-    function_name                 = string
-    func_plan_name                = string
-    func_os_type                  = string
-    func_sku                      = string
-    func_zone_balancing           = bool
-    func_storage_account_name     = string
-    func_storage_account_tier     = string
-    func_account_replication_type = string
-    func_account_kind             = string
-    func_image_name               = string
-    func_image_tag                = string
-    func_registry_url             = string
+    name                 = string
+    os_type                  = string
+    sku                      = string
+    zone_balancing           = bool
+    storage_account_name     = string
+    storage_account_tier     = string
+    account_replication_type = string
+    account_kind             = string
+    image_name               = string
+    image_tag                = string
+    registry_url             = string
     location                      = string
     subnet_key                    = string
   }))
 }
 
 # REDIS CACHE CONFIG
-variable "redis_name" {
-  type = string
-}
-variable "redis_sku" {
-  type = string
-}
-variable "redis_capacity" {
-  type = number
-}
-variable "redis_family" {
-  type = string
-}
-variable "redis_shard_count" {
-  type    = number
-  default = null
-}
-variable "redis_replicas_per_master" {
-  type    = number
-  default = null
+variable "redis_config" {
+  type = map(object({
+    name                = string
+    sku_name            = string
+    capacity            = number
+    family              = string
+    shard_count         = optional(number)
+    replicas_per_master = optional(number)
+  }))
 }
 
 # KEY VAULT CONFIG
@@ -136,108 +126,42 @@ variable "key_vault" {
 
 
 # AZURE API MANAGEMENT CONFIG
-variable "apim_name" {
-  type = string
-}
-variable "apim_publisher_name" {
-  type = string
-}
-variable "apim_publisher_email" {
-  type = string
-}
-variable "sku_name" {
-  type = string
+variable "apim_config" {
+  type = map(object({
+    name            = string
+    publisher_name  = string
+    publisher_email = string
+    sku_name        = string
+  }))
 }
 
 # AZURE SERVICE BUS CONFIG
-variable "service_bus_name" {
-  type = string
-}
-variable "service_bus_capacity" {
-  type = number
-}
-variable "sbus_sku_name" {
-  type = string
-}
-variable "premium_messaging_partitions" {
-  type = number
+variable "service_bus_config" {
+  type = map(object({
+    name                         = string
+    capacity                     = number
+    sku_name                     = string
+    premium_messaging_partitions = optional(number)
+  }))
 }
 
 # AZURE COSMOS DB CONFIG
-variable "cosmos_db_name" {
-  description = "Cosmos DB account name"
-  type        = string
-}
-
-variable "cosmos_db_throughput" {
-  description = "Cosmos DB manual throughput"
-  type        = number
-  default     = 6000
-}
-
-variable "cosmos_db_location" {
-  description = "Cosmos DB primary location"
-  type        = string
-  default     = "uaenorth"
-}
-
-variable "cosmos_db_zone_redundant" {
-  description = "Enable zone redundant"
-  type        = bool
-  default     = false
-}
-
-variable "cosmos_db_offer_type" {
-  description = "Cosmos DB offer type"
-  type        = string
-  default     = "Standard"
-}
-
-variable "cosmos_db_kind" {
-  description = "Cosmos DB kind"
-  type        = string
-  default     = "GlobalDocumentDB"
-}
-
-variable "cosmos_db_free_tier_enabled" {
-  description = "Enable free tier"
-  type        = bool
-  default     = false
-}
-
-variable "cosmos_db_enable_multiple_write_locations" {
-  description = "Enable multiple write locations"
-  type        = bool
-  default     = false
-}
-
-variable "cosmos_db_backup_type" {
-  description = "Cosmos DB backup type"
-  type        = string
-  default     = "Periodic"
-}
-
-variable "cosmos_db_backup_interval_in_minutes" {
-  description = "Cosmos DB backup interval"
-  type        = number
-  default     = 240
-}
-
-variable "cosmos_db_backup_retention_in_hours" {
-  description = "Cosmos DB backup retention"
-  type        = number
-  default     = 8
-}
-
-variable "cosmos_db_backup_storage_redundancy" {
-  description = "Cosmos DB backup storage redundancy"
-  type        = string
-  default     = "Geo"
-}
-
-variable "cosmos_db_database_name" {
-  description = "Cosmos DB database name"
-  type        = string
+variable "cosmos_db_config" {
+  type = map(object({
+    name                            = string
+    throughput                      = optional(number, 400)
+    location                        = string
+    zone_redundant                  = optional(bool, false)
+    offer_type                      = optional(string, "Standard")
+    kind                            = optional(string, "GlobalDocumentDB")
+    free_tier_enabled               = optional(bool, false)
+    enable_multiple_write_locations = optional(bool, false)
+    database_name                   = string
+    backup_type                     = optional(string, "Periodic")
+    backup_interval_in_minutes      = optional(number, 240)
+    backup_retention_in_hours       = optional(number, 8)
+    backup_storage_redundancy       = optional(string, "Local")
+  }))
 }
 
 
@@ -322,96 +246,62 @@ variable "subnet_logic_sc_prefix" {
 }
 
 # POSTGRESQL CONFIG
-variable "postgresql_name" {
-  type = string
-}
-variable "postgresql_admin_login" {
-  type = string
-}
-variable "postgresql_admin_password" {
-  type      = string
+variable "postgresql_config" {
+  type = map(object({
+    name                   = string
+    administrator_login    = string
+    administrator_password = string
+    sku_name               = optional(string, "GP_Standard_D2ds_v5")
+    storage_mb             = optional(number, 131072)
+  }))
   sensitive = true
-}
-variable "postgresql_sku" {
-  type    = string
-  default = "GP_Standard_D2ds_v5"
-}
-variable "postgresql_storage_mb" {
-  type    = number
-  default = 131072
 }
 
 # EVENT GRID CONFIG
-variable "event_grid_name" {
-  type = string
-}
-variable "event_grid_sku" {
-  type    = string
-  default = "Standard"
-}
-variable "event_grid_capacity" {
-  type    = number
-  default = 1
-}
-variable "event_grid_public_network_access" {
-  type    = bool
-  default = false
+variable "event_grid_config" {
+  type = map(object({
+    name                          = string
+    sku                           = optional(string, "Standard")
+    capacity                      = optional(number, 1)
+    public_network_access_enabled = optional(bool, false)
+  }))
 }
 
 # EVENT HUB CONFIG
-variable "event_hub_name" {
-  type = string
-}
-variable "event_hub_sku" {
-  type    = string
-  default = "Standard"
-}
-variable "event_hub_capacity" {
-  type    = number
-  default = 1
-}
-variable "event_hub_public_network_access" {
-  type    = bool
-  default = false
+variable "event_hub_config" {
+  type = map(object({
+    name                          = string
+    sku                           = optional(string, "Standard")
+    capacity                      = optional(number, 1)
+    public_network_access_enabled = optional(bool, false)
+  }))
 }
 
 # LOGIC APP CONFIG
-variable "logic_app_name" {
-  type = string
-}
-variable "logic_app_plan_name" {
-  type = string
-}
-variable "logic_app_sku" {
-  type    = string
-  default = "WS1"
-}
-variable "logic_app_zone_balancing" {
-  type    = bool
-  default = false
-}
-variable "logic_app_storage_name" {
-  type = string
+variable "logic_app_config" {
+  type = map(object({
+    name                   = string
+    sku_name               = optional(string, "WS1")
+    zone_balancing_enabled = optional(bool, false)
+    storage_account_name   = string
+  }))
 }
 
 # LINUX VM CONFIG
-variable "vm_linux" {
-
-  type = object({
+variable "vm_linux_config" {
+  type = map(object({
     name           = string
     size           = string
     admin_username = string
     admin_password = string
-
     source_image = object({
       publisher = string
       offer     = string
       sku       = string
       version   = string
     })
-
-  })
-
+    subnet_id = optional(string) # if needed
+  }))
   sensitive = true
 }
 
