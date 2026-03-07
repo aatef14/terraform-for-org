@@ -29,15 +29,15 @@ By using `for_each`, every resource has a unique **Identity (Key)**.
 
 ## 🕸️ VNet Integration using `locals`
 
-We use a special `locals` block in `vnet.tf` to manage VNet integration safely.
+We use a special `locals` block in `subnet.tf` to manage VNet integration safely.
 
-### The `subnets` Map
+### The `subnets_lookup` Map
 We created a local map that connects human-readable keys to actual Subnet Resource IDs:
 ```hcl
 locals {
-  subnets = {
-    fend_qc  = module.subnet_fend_qc.subnet_id
-    bend_qc  = module.subnet_bend_qc.subnet_id
+  subnets_lookup = {
+    pep_qc   = module.subnets_qc["pep"].subnet_id
+    fend_qc  = module.subnets_qc["frontend"].subnet_id
     # ...
   }
 }

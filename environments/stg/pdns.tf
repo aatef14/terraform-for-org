@@ -49,8 +49,8 @@ module "dns_zones" {
   resource_group_name = data.azurerm_resource_group.rg_dev.name
 
   vnet_links = { # You can add more vnet links here e.g "link-nc" = module.vnet_nc.vnet_id
-    "link-qc" = module.vnet_qc.vnet_id
-    "link-sc" = module.vnet_sc.vnet_id
+    "link-qc" = module.vnets["qc"].vnet_id
+    "link-sc" = module.vnets["sc"].vnet_id
   }
 
   tags = local.common_tags

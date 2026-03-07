@@ -86,7 +86,7 @@ variable "app_service_config" {
 
 variable "function_app_config" {
   type = map(object({
-    name                 = string
+    name                     = string
     os_type                  = string
     sku                      = string
     zone_balancing           = bool
@@ -97,8 +97,8 @@ variable "function_app_config" {
     image_name               = string
     image_tag                = string
     registry_url             = string
-    location                      = string
-    subnet_key                    = string
+    location                 = string
+    subnet_key               = string
   }))
 }
 
@@ -165,85 +165,6 @@ variable "cosmos_db_config" {
 }
 
 
-# VNET CONFIG
-# VNET_Qatar_Central
-variable "vnet_name_qc" {
-  type        = string
-  description = "Name of the virtual network"
-}
-
-variable "location_qc" {
-  type = string
-}
-
-variable "vnet_address_space_qc" {
-  type = list(string)
-}
-
-# Subnet private end point
-variable "subnet_pep_qc_name" {
-  type = string
-}
-variable "subnet_pep_qc_prefix" {
-  type = list(string)
-}
-# Subnet front end
-variable "subnet_fend_qc_name" {
-  type = string
-}
-variable "subnet_fend_qc_prefix" {
-  type = list(string)
-}
-# Subnet back end
-variable "subnet_bend_qc_name" {
-  type = string
-}
-variable "subnet_bend_qc_prefix" {
-  type = list(string)
-}
-# Subnet api management
-variable "subnet_apim_qc_name" {
-  type = string
-}
-variable "subnet_apim_qc_prefix" {
-  type = list(string)
-}
-
-# Subnet database qc
-variable "subnet_db_qc_name" {
-  type = string
-}
-variable "subnet_db_qc_prefix" {
-  type = list(string)
-}
-
-# VNET_Sweden_Central
-variable "vnet_name_sc" {
-  type        = string
-  description = "Name of the virtual network"
-}
-variable "location_sc" {
-  type = string
-}
-variable "vnet_address_space_sc" {
-  type        = list(string)
-  description = "Address space for the VNet"
-}
-
-# Subnet private end point
-variable "subnet_pep_sc_name" {
-  type = string
-}
-variable "subnet_pep_sc_prefix" {
-  type = list(string)
-}
-# Subnet logic
-variable "subnet_logic_sc_name" {
-  type = string
-}
-variable "subnet_logic_sc_prefix" {
-  type = list(string)
-}
 
 # POSTGRESQL CONFIG
 variable "postgresql_config" {
@@ -353,3 +274,96 @@ variable "openai_deployments" {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+# THIS MANAGED BY VNET>TF AND SUBNET>TF FILE RESPECTIVELY
+
+# # VNET CONFIG
+# # VNET_Qatar_Central
+# variable "vnet_name_qc" {
+#   type        = string
+#   description = "Name of the virtual network"
+# }
+
+# variable "location_qc" {
+#   type = string
+# }
+
+# variable "vnet_address_space_qc" {
+#   type = list(string)
+# }
+
+# # Subnet private end point
+# variable "subnet_pep_qc_name" {
+#   type = string
+# }
+# variable "subnet_pep_qc_prefix" {
+#   type = list(string)
+# }
+# # Subnet front end
+# variable "subnet_fend_qc_name" {
+#   type = string
+# }
+# variable "subnet_fend_qc_prefix" {
+#   type = list(string)
+# }
+# # Subnet back end
+# variable "subnet_bend_qc_name" {
+#   type = string
+# }
+# variable "subnet_bend_qc_prefix" {
+#   type = list(string)
+# }
+# # Subnet api management
+# variable "subnet_apim_qc_name" {
+#   type = string
+# }
+# variable "subnet_apim_qc_prefix" {
+#   type = list(string)
+# }
+
+# # Subnet database qc
+# variable "subnet_db_qc_name" {
+#   type = string
+# }
+# variable "subnet_db_qc_prefix" {
+#   type = list(string)
+# }
+
+# # VNET_Sweden_Central
+# variable "vnet_name_sc" {
+#   type        = string
+#   description = "Name of the virtual network"
+# }
+# variable "location_sc" {
+#   type = string
+# }
+# variable "vnet_address_space_sc" {
+#   type        = list(string)
+#   description = "Address space for the VNet"
+# }
+
+# # Subnet private end point
+# variable "subnet_pep_sc_name" {
+#   type = string
+# }
+# variable "subnet_pep_sc_prefix" {
+#   type = list(string)
+# }
+# # Subnet logic
+# variable "subnet_logic_sc_name" {
+#   type = string
+# }
+# variable "subnet_logic_sc_prefix" {
+#   type = list(string)
+# }

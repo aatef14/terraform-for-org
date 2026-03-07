@@ -48,7 +48,8 @@ Each environment directory (`dev/`, `stg/`, `prod/`) contains:
 | :--- | :--- | :--- |
 | **`terraform.tfvars`** | ✏️ **THE ONLY FILE YOU NEED TO EDIT** — All values, toggles, and configurations | Everyone |
 | **`main.tf`** | Heart of the environment — all compute & logic modules | Terraform devs |
-| **`vnet.tf`** | 🌐 Core Networking — VNets, Subnets, and the `local.subnets` map | Terraform devs |
+| **`vnet.tf`** | 🌐 Virtual Networks — Managed using a scale-via-data `vnets` map | Terraform devs |
+| **`subnet.tf`** | 🔀 Subnets — Granular subnet control and the `subnets_lookup` map | Terraform devs |
 | **`pdns.tf`** | 📛 Private DNS Zone management — auto-provisions based on toggles | Terraform devs |
 | **`pep.tf`** | 🔒 Private Endpoints — centralized registry of all PEPs | Terraform devs |
 | **`foundry.tf`** | 🧠 AI Foundry Hub, Project, Search, OpenAI configurations | Terraform devs |
@@ -102,16 +103,15 @@ enable_ai_search  = true
 enable_openai     = true
 ```
 
-### 2. Dynamic Placement (The Subnet Map)
-When adding an app, you simply specify its `subnet_key`. The system automatically looks up the correct Resource ID from the `local.subnets` map in `vnet.tf`.
+### 2. Dynamic Placement (The Subnet Lookup Map)
+When adding an app, you simply specify its `subnet_key`. The system automatically looks up the correct Resource ID from the `local.subnets_lookup` map in `subnet.tf`.
 
 ```hcl
-# In vnet.tf — the subnet lookup map
+# In subnet.tf — the subnet lookup map
 locals {
-  subnets = {
-    fend_qc  = module.subnet_fend_qc.subnet_id
-    bend_qc  = module.subnet_bend_qc.subnet_id
-    func_sc  = module.subnet_func_sc.subnet_id
+  subnets_lookup = {
+    pep_qc   = module.subnets_qc["pep"].subnet_id
+    fend_qc  = module.subnets_qc["frontend"].subnet_id
     # ...
   }
 }
@@ -229,13 +229,13 @@ Run the sync script to propagate changes to `stg/` and `prod/`.
 
 ## 💡 Key Design Patterns
 
-*   **Scale-via-Data**: We use `for_each` loops instead of static blocks. Scale by editing `.tfvars` without touching core logic.
+*   **Scale-via-Data**: We use `for_each` loops instead of static blocks. Scale by editing `.tfvars` (or internal maps in `vnet.tf/subnet.tf`) without touching core logic.
 *   **Toggle-Driven**: Every service category can be independently enabled/disabled via `feature_toggles`.
-*   **Avoid Numeric Indices**: We use name-based keys (e.g., `["fend"]`, `["st-1"]`) instead of `[0]` to prevent accidental resource destruction during shifts.
+*   **Avoid Numeric Indices**: We use name-based keys (e.g., `["fend"]`, `["qc"]`) instead of `[0]` to prevent accidental resource destruction during shifts.
 *   **Centralized PEP Registry**: All private endpoints (except AI) are defined in a single `locals` map in `pep.tf`, filtered by the `enabled` flag.
-*   **Decoupling**: We separate **Compute** (`main.tf`), **Network** (`vnet.tf`), **DNS** (`pdns.tf`), **Security** (`pep.tf`), and **AI** (`foundry.tf`) into split files for clarity.
+*   **Decoupling**: We separate **Compute** (`main.tf`), **VNet** (`vnet.tf`), **Subnets** (`subnet.tf`), **DNS** (`pdns.tf`), **Security** (`pep.tf`), and **AI** (`foundry.tf`) into split files for clarity.
 *   **Auto-Naming**: Standardized prefixes (e.g., `pep-`, `snet-`, `vnet-`) ensure compliance.
-*   **Multi-Region**: Two VNets across Qatar Central and Sweden Central provide geographic distribution.
+*   **Multi-Region**: Multiple VNets across Qatar Central and Sweden Central are provisioned from a single map for easy consistency.
 
 ---
 
