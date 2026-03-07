@@ -1,152 +1,159 @@
-# Configuration for AI Foundry Hub, Project, and associated AI Services
-# NOTE: AI Foundry Hub requires both Storage Account and Key Vault to be enabled.
-# Ensure var.enable_storage_account and var.enable_key_vault are set to true when using AI Foundry.
+# # Configuration for AI Foundry Hub, Project, and associated AI Services
+# # NOTE: AI Foundry Hub requires both Storage Account and Key Vault to be enabled.
+# # Ensure var.enable_storage_account and var.enable_key_vault are set to true when using AI Foundry.
 
-# For more information check github.com/aatef14/terraform-for-org/more-info/foundry.md
+# # For more information check github.com/aatef14/terraform-for-org/more-info/foundry.md
 
-# AI Foundry Hub
-module "ai_foundry_hub" {
-  count  = var.enable_ai_foundry ? 1 : 0
-  source = "../../modules/ai-foundry-hub"
+# # Comment if you dont want to deploy AI Foundry Hub, 
+# # This avoids errors and save time
+# # Select all and then Ctrl + / to comment and likewise to uncomment
 
-  name                = var.ai_foundry_hub_name
-  location            = data.azurerm_resource_group.rg_dev.location
-  resource_group_name = data.azurerm_resource_group.rg_dev.name
 
-  storage_account_id = module.storage_account["st-1"].storage_account_id
-  key_vault_id       = module.key_vault["kv_1"].key_vault_id
 
-  public_network_access_enabled = true
 
-  tags = local.common_tags
-}
+# # AI Foundry Hub
+# module "ai_foundry_hub" {
+#   count  = var.enable_ai_foundry ? 1 : 0
+#   source = "../../modules/ai-foundry-hub"
 
-# AI Foundry Project
-module "ai_foundry_project" {
-  count  = var.enable_ai_foundry ? 1 : 0
-  source = "../../modules/ai-foundry-project"
+#   name                = var.ai_foundry_hub_name
+#   location            = data.azurerm_resource_group.rg_dev.location
+#   resource_group_name = data.azurerm_resource_group.rg_dev.name
 
-  name     = var.ai_foundry_project_name
-  location = data.azurerm_resource_group.rg_dev.location
-  hub_id   = module.ai_foundry_hub[0].hub_id
+#   storage_account_id = module.storage_account["st-1"].storage_account_id
+#   key_vault_id       = module.key_vault["kv_1"].key_vault_id
 
-  tags = local.common_tags
-}
+#   public_network_access_enabled = true
 
-# AI Search Service
-module "ai_search" {
-  count  = var.enable_ai_search ? 1 : 0
-  source = "../../modules/ai-search"
+#   tags = local.common_tags
+# }
 
-  name                = var.ai_search_name
-  location            = data.azurerm_resource_group.rg_dev.location
-  resource_group_name = data.azurerm_resource_group.rg_dev.name
-  sku                 = var.ai_search_sku
+# # AI Foundry Project
+# module "ai_foundry_project" {
+#   count  = var.enable_ai_foundry ? 1 : 0
+#   source = "../../modules/ai-foundry-project"
 
-  tags = local.common_tags
-}
+#   name     = var.ai_foundry_project_name
+#   location = data.azurerm_resource_group.rg_dev.location
+#   hub_id   = module.ai_foundry_hub[0].hub_id
 
-# OpenAI Cognitive Service
-module "openai" {
-  count  = var.enable_openai ? 1 : 0
-  source = "../../modules/open-ai-cognitive"
+#   tags = local.common_tags
+# }
 
-  name                = var.openai_name
-  location            = data.azurerm_resource_group.rg_dev.location
-  resource_group_name = data.azurerm_resource_group.rg_dev.name
-  sku_name            = var.openai_sku_name
-  deployments         = var.openai_deployments
+# # AI Search Service
+# module "ai_search" {
+#   count  = var.enable_ai_search ? 1 : 0
+#   source = "../../modules/ai-search"
 
-  tags = local.common_tags
-}
+#   name                = var.ai_search_name
+#   location            = data.azurerm_resource_group.rg_dev.location
+#   resource_group_name = data.azurerm_resource_group.rg_dev.name
+#   sku                 = var.ai_search_sku
 
-# AI FOUNDRY CONNECTIONS
-# These modules connect the Hub to the specific AI services
+#   tags = local.common_tags
+# }
 
-module "hub_connection_openai" {
-  count  = (var.enable_ai_foundry && var.enable_openai) ? 1 : 0
-  source = "../../modules/ai-foundry-connection"
+# # OpenAI Cognitive Service
+# module "openai" {
+#   count  = var.enable_openai ? 1 : 0
+#   source = "../../modules/open-ai-cognitive"
 
-  name      = "${var.openai_name}-connection"
-  hub_id    = module.ai_foundry_hub[0].hub_id
-  category  = "AzureOpenAI"
-  target    = module.openai[0].openai_endpoint
-  auth_type = "ApiKey"
-  credentials = {
-    key = module.openai[0].primary_key
-  }
-  metadata = {
-    ApiType    = "Azure"
-    ResourceId = module.openai[0].openai_id
-  }
-}
+#   name                = var.openai_name
+#   location            = data.azurerm_resource_group.rg_dev.location
+#   resource_group_name = data.azurerm_resource_group.rg_dev.name
+#   sku_name            = var.openai_sku_name
+#   deployments         = var.openai_deployments
 
-module "hub_connection_search" {
-  count  = (var.enable_ai_foundry && var.enable_ai_search) ? 1 : 0
-  source = "../../modules/ai-foundry-connection"
+#   tags = local.common_tags
+# }
 
-  name      = "${var.ai_search_name}-connection"
-  hub_id    = module.ai_foundry_hub[0].hub_id
-  category  = "CognitiveSearch"
-  target    = module.ai_search[0].search_endpoint
-  auth_type = "ApiKey"
-  credentials = {
-    key = module.ai_search[0].primary_key
-  }
-  metadata = {
-    ResourceId = module.ai_search[0].search_id
-  }
-}
+# # AI FOUNDRY CONNECTIONS
+# # These modules connect the Hub to the specific AI services
 
-# PRIVATE ENDPOINTS FOR AI SERVICES
+# module "hub_connection_openai" {
+#   count  = (var.enable_ai_foundry && var.enable_openai) ? 1 : 0
+#   source = "../../modules/ai-foundry-connection"
 
-# AI Foundry Hub Private Endpoint
-module "pe_ai_foundry_hub" {
-  count  = var.enable_ai_foundry ? 1 : 0
-  source = "../../modules/pep"
+#   name      = "${var.openai_name}-connection"
+#   hub_id    = module.ai_foundry_hub[0].hub_id
+#   category  = "AzureOpenAI"
+#   target    = module.openai[0].openai_endpoint
+#   auth_type = "ApiKey"
+#   credentials = {
+#     key = module.openai[0].primary_key
+#   }
+#   metadata = {
+#     ApiType    = "Azure"
+#     ResourceId = module.openai[0].openai_id
+#   }
+# }
 
-  name                = "pep-${var.ai_foundry_hub_name}"
-  location            = data.azurerm_resource_group.rg_dev.location
-  resource_group_name = data.azurerm_resource_group.rg_dev.name
-  subnet_id           = module.subnet_pep_qc.subnet_id
+# module "hub_connection_search" {
+#   count  = (var.enable_ai_foundry && var.enable_ai_search) ? 1 : 0
+#   source = "../../modules/ai-foundry-connection"
 
-  private_connection_resource_id = module.ai_foundry_hub[0].hub_id
-  subresource_names              = ["amlworkspace"]
-  private_dns_zone_ids           = [local.dns_zone_ids["aiservices"]]
+#   name      = "${var.ai_search_name}-connection"
+#   hub_id    = module.ai_foundry_hub[0].hub_id
+#   category  = "CognitiveSearch"
+#   target    = module.ai_search[0].search_endpoint
+#   auth_type = "ApiKey"
+#   credentials = {
+#     key = module.ai_search[0].primary_key
+#   }
+#   metadata = {
+#     ResourceId = module.ai_search[0].search_id
+#   }
+# }
 
-  tags = local.common_tags
-}
+# # PRIVATE ENDPOINTS FOR AI SERVICES
 
-# AI Search Private Endpoint
-module "pe_ai_search" {
-  count  = var.enable_ai_search ? 1 : 0
-  source = "../../modules/pep"
+# # AI Foundry Hub Private Endpoint
+# module "pe_ai_foundry_hub" {
+#   count  = var.enable_ai_foundry ? 1 : 0
+#   source = "../../modules/pep"
 
-  name                = "pep-${var.ai_search_name}"
-  location            = data.azurerm_resource_group.rg_dev.location
-  resource_group_name = data.azurerm_resource_group.rg_dev.name
-  subnet_id           = module.subnet_pep_qc.subnet_id
+#   name                = "pep-${var.ai_foundry_hub_name}"
+#   location            = data.azurerm_resource_group.rg_dev.location
+#   resource_group_name = data.azurerm_resource_group.rg_dev.name
+#   subnet_id           = module.subnets_qc["pep"].subnet_id
 
-  private_connection_resource_id = module.ai_search[0].search_id
-  subresource_names              = ["searchService"]
-  private_dns_zone_ids           = [local.dns_zone_ids["search"]]
+#   private_connection_resource_id = module.ai_foundry_hub[0].hub_id
+#   subresource_names              = ["amlworkspace"]
+#   private_dns_zone_ids           = [local.dns_zone_ids["aiservices"]]
 
-  tags = local.common_tags
-}
+#   tags = local.common_tags
+# }
 
-# OpenAI Private Endpoint
-module "pe_openai" {
-  count  = var.enable_openai ? 1 : 0
-  source = "../../modules/pep"
+# # AI Search Private Endpoint
+# module "pe_ai_search" {
+#   count  = var.enable_ai_search ? 1 : 0
+#   source = "../../modules/pep"
 
-  name                = "pep-${var.openai_name}"
-  location            = data.azurerm_resource_group.rg_dev.location
-  resource_group_name = data.azurerm_resource_group.rg_dev.name
-  subnet_id           = module.subnet_pep_qc.subnet_id
+#   name                = "pep-${var.ai_search_name}"
+#   location            = data.azurerm_resource_group.rg_dev.location
+#   resource_group_name = data.azurerm_resource_group.rg_dev.name
+#   subnet_id           = module.subnets_qc["pep"].subnet_id
 
-  private_connection_resource_id = module.openai[0].openai_id
-  subresource_names              = ["account"]
-  private_dns_zone_ids           = [local.dns_zone_ids["openai"]]
+#   private_connection_resource_id = module.ai_search[0].search_id
+#   subresource_names              = ["searchService"]
+#   private_dns_zone_ids           = [local.dns_zone_ids["search"]]
 
-  tags = local.common_tags
-}
+#   tags = local.common_tags
+# }
+
+# # OpenAI Private Endpoint
+# module "pe_openai" {
+#   count  = var.enable_openai ? 1 : 0
+#   source = "../../modules/pep"
+
+#   name                = "pep-${var.openai_name}"
+#   location            = data.azurerm_resource_group.rg_dev.location
+#   resource_group_name = data.azurerm_resource_group.rg_dev.name
+#   subnet_id           =  module.subnets_qc["pep"].subnet_id
+
+#   private_connection_resource_id = module.openai[0].openai_id
+#   subresource_names              = ["account"]
+#   private_dns_zone_ids           = [local.dns_zone_ids["openai"]]
+
+#   tags = local.common_tags
+# }

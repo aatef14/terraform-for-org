@@ -70,7 +70,7 @@ app_service_config = {
 function_app_config = {
 
   function_1 = {
-    name                 = "func-container-premium"
+    name                     = "func-container-premium"
     os_type                  = "Linux"
     sku                      = "EP1"
     zone_balancing           = false
@@ -81,8 +81,8 @@ function_app_config = {
     image_name               = "appsvc/staticsite"
     image_tag                = "latest"
     registry_url             = "https://mcr.microsoft.com"
-    location                      = "swedencentral"
-    subnet_key                    = "func_sc" # check out local.subnets in vnet.tf file 
+    location                 = "swedencentral"
+    subnet_key               = "func_sc" # check out local.subnets in vnet.tf file 
   }
 }
 
@@ -177,7 +177,7 @@ vm_linux_config = {
     size           = "Standard_D4s_v4"
     admin_username = "azureuser"
     admin_password = "Password123!"
-    subnet_id = "pep_qc" # check out local.subnets in vnet.tf file
+    subnet_id      = "pep_qc" # check out local.subnets in vnet.tf file
 
     source_image = {
       publisher = "Canonical"
@@ -213,47 +213,6 @@ cosmos_db_config = {
 
 
 
-# VNET Config
-# VNET_Qatar_Central
-vnet_name_qc          = "vnet-qe-qisp-stg-qc-01"
-vnet_address_space_qc = ["10.0.0.0/24"]
-location_qc           = "qatarcentral"
-
-# Subnet private end point qc
-subnet_pep_qc_name   = "snet-pep-qe-qisp-dev-qc-01"
-subnet_pep_qc_prefix = ["/27"]
-# subnet front end qc
-subnet_fend_qc_name   = "snet-app-frontend-qe-qisp-stg-qc-01"
-subnet_fend_qc_prefix = ["/28"]
-# subnet back end qc
-subnet_bend_qc_name   = "snet-app-backend-qe-qisp-stg-qc-01"
-subnet_bend_qc_prefix = ["/28"]
-# subnet apim  qc
-subnet_apim_qc_name   = "snet-apim-qe-qisp-stg-qc-01"
-subnet_apim_qc_prefix = ["/28"]
-
-# subnet database qc
-subnet_db_qc_name   = "snet-db-qe-qisp-stg-qc-01"
-subnet_db_qc_prefix = ["/28"]
-
-
-
-
-# VNET_Sweden_Central
-vnet_name_sc          = "vnet-dev-qe-01"
-vnet_address_space_sc = ["10.0.0.0/16"]
-location_sc           = "swedencentral"
-
-# subnet private endpoint sc
-subnet_pep_sc_name   = "snet-pep-qe-qisp-stg-sc-01"
-subnet_pep_sc_prefix = ["/28"]
-#subnet logic sc
-subnet_logic_sc_name   = "snet-logic-qe-qisp-stg-sc-01"
-subnet_logic_sc_prefix = ["/28"]
-
-#subnet function sc
-subnet_func_sc_name   = "snet-func-qe-qisp-stg-sc-01"
-subnet_func_sc_prefix = ["/28"]
 
 
 # AI FOUNDRY CONFIG
@@ -275,3 +234,51 @@ openai_deployments = {
 }
 
 
+
+
+
+
+
+# This is managed by VNET>TF AND SUBNET>TF FILE RESPECTIVELY
+
+# # VNET Config
+# # VNET_Qatar_Central
+# vnet_name_qc          = "vnet-qe-qisp-stg-qc-01"
+# vnet_address_space_qc = ["10.0.0.0/24"]
+# location_qc           = "qatarcentral"
+
+# # Subnet private end point qc
+# subnet_pep_qc_name   = "snet-pep-qe-qisp-dev-qc-01"
+# subnet_pep_qc_prefix = ["/27"]
+# # subnet front end qc
+# subnet_fend_qc_name   = "snet-app-frontend-qe-qisp-stg-qc-01"
+# subnet_fend_qc_prefix = ["/28"]
+# # subnet back end qc
+# subnet_bend_qc_name   = "snet-app-backend-qe-qisp-stg-qc-01"
+# subnet_bend_qc_prefix = ["/28"]
+# # subnet apim  qc
+# subnet_apim_qc_name   = "snet-apim-qe-qisp-stg-qc-01"
+# subnet_apim_qc_prefix = ["/28"]
+
+# # subnet database qc
+# subnet_db_qc_name   = "snet-db-qe-qisp-stg-qc-01"
+# subnet_db_qc_prefix = ["/28"]
+
+
+
+
+# # VNET_Sweden_Central
+# vnet_name_sc          = "vnet-dev-qe-01"
+# vnet_address_space_sc = ["10.0.0.0/16"]
+# location_sc           = "swedencentral"
+
+# # subnet private endpoint sc
+# subnet_pep_sc_name   = "snet-pep-qe-qisp-stg-sc-01"
+# subnet_pep_sc_prefix = ["/28"]
+# #subnet logic sc
+# subnet_logic_sc_name   = "snet-logic-qe-qisp-stg-sc-01"
+# subnet_logic_sc_prefix = ["/28"]
+
+# #subnet function sc
+# subnet_func_sc_name   = "snet-func-qe-qisp-stg-sc-01"
+# subnet_func_sc_prefix = ["/28"]

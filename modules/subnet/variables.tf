@@ -18,3 +18,10 @@ variable "address_prefixes" {
   type        = list(string)
 }
 
+variable "delegation" {
+  type = object({
+    name    = string
+    service = string
+  })
+  default = null
+}

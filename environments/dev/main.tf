@@ -12,7 +12,11 @@ locals {
   }
 }
 
+
 # Azure VNET config (Managed in vnet.tf)
+
+################################## START OF MAIN FILE ####################################################
+
 
 # Storage account config
 module "storage_account" {
@@ -39,7 +43,7 @@ module "storage_account" {
   account_kind             = each.value.storage_account_kind
   tags                     = local.common_tags
 
-  depends_on = [module.vnet_qc, module.vnet_sc]
+  depends_on = [module.vnets]
 }
 
 # WEB APP SERVICE CONFIG - VNET INTEGRATION - optional
@@ -54,11 +58,11 @@ module "app_service" {
 
   sku_name               = each.value.sku_name
   zone_balancing_enabled = each.value.zone_balancing_enabled
-  vnet_subnet_id         = local.subnets[each.value.subnet_key]
+  vnet_subnet_id         = local.subnets_lookup[each.value.subnet_key]
   docker_image_name      = each.value.docker_image_name
   tags                   = local.common_tags
 
-  depends_on = [module.vnet_qc, module.vnet_sc]
+  depends_on = [module.vnets]
 }
 
 
@@ -81,7 +85,7 @@ module "redis_cache" {
 
   tags = local.common_tags
 
-  depends_on = [module.vnet_qc, module.vnet_sc]
+  depends_on = [module.vnets]
 }
 
 
@@ -96,8 +100,8 @@ module "function_app" {
   location            = each.value.location
   resource_group_name = data.azurerm_resource_group.rg_dev.name
 
-  func_os_type = var.function_app_config["fa_1"].os_type
-  func_sku = var.function_app_config["fa_1"].sku
+  func_os_type        = var.function_app_config["fa_1"].os_type
+  func_sku            = var.function_app_config["fa_1"].sku
   func_zone_balancing = var.function_app_config["fa_1"].zone_balancing
 
   func_storage_account_name     = var.function_app_config["fa_1"].storage_account_name
@@ -109,10 +113,10 @@ module "function_app" {
   func_image_tag    = var.function_app_config["fa_1"].image_tag
   func_registry_url = var.function_app_config["fa_1"].registry_url
 
-  vnet_subnet_id = local.subnets[each.value.subnet_key]
+  vnet_subnet_id = local.subnets_lookup[each.value.subnet_key]
   tags           = local.common_tags
 
-  depends_on = [module.vnet_qc, module.vnet_sc, module.storage_account]
+  depends_on = [module.vnets, module.storage_account]
 }
 
 
@@ -128,7 +132,7 @@ module "key_vault" {
   key_vault_sku_name  = each.value.key_vault_sku
   tags                = local.common_tags
 
-  depends_on = [module.vnet_qc, module.vnet_sc]
+  depends_on = [module.vnets]
 }
 
 
@@ -145,7 +149,7 @@ module "apim" {
   publisher_email = each.value.publisher_email
   sku_name        = each.value.sku_name
 
-  depends_on = [module.vnet_qc, module.vnet_sc, module.service_bus]
+  depends_on = [module.vnets, module.service_bus]
 }
 
 # Azure Service Bus
@@ -160,7 +164,7 @@ module "service_bus" {
   sbus_sku_name                = each.value.sku_name
   premium_messaging_partitions = each.value.premium_messaging_partitions
 
-  depends_on = [module.vnet_qc, module.vnet_sc]
+  depends_on = [module.vnets]
 }
 
 # Azure Cosmos DB
@@ -183,7 +187,7 @@ module "cosmos_db" {
   backup_retention_in_hours       = each.value.backup_retention_in_hours
   backup_storage_redundancy       = each.value.backup_storage_redundancy
 
-  depends_on = [module.vnet_qc, module.vnet_sc]
+  depends_on = [module.vnets]
 }
 
 # Azure PostgreSQL Flexible Server
@@ -202,7 +206,7 @@ module "postgresql" {
 
   tags = local.common_tags
 
-  depends_on = [module.vnet_qc, module.vnet_sc]
+  depends_on = [module.vnets]
 }
 
 # Azure Event Grid Namespace
@@ -221,7 +225,7 @@ module "event_grid" {
 
   tags = local.common_tags
 
-  depends_on = [module.vnet_qc, module.vnet_sc]
+  depends_on = [module.vnets]
 }
 
 # Azure Logic App Standard
@@ -230,7 +234,7 @@ module "logic_app" {
   source   = "../../modules/logic-app"
 
   name                = each.value.name
-  location            = var.location_sc
+  location            = "sweden"
   resource_group_name = data.azurerm_resource_group.rg_dev.name
 
   app_service_plan_name            = "asp-${each.value.name}"
@@ -239,11 +243,11 @@ module "logic_app" {
   storage_account_name             = each.value.storage_account_name
   storage_account_tier             = "Standard"
   storage_account_replication_type = "LRS"
-  virtual_network_subnet_id        = module.subnet_logic_sc.subnet_id
+  virtual_network_subnet_id        = module.subnets_qc["pep"].subnet_id
 
   tags = local.common_tags
 
-  depends_on = [module.vnet_qc, module.vnet_sc, module.storage_account]
+  depends_on = [module.vnets, module.storage_account]
 }
 
 # Azure Event Hub Namespace
@@ -262,7 +266,7 @@ module "event_hub" {
 
   tags = local.common_tags
 
-  depends_on = [module.vnet_qc, module.vnet_sc]
+  depends_on = [module.vnets]
 }
 
 # Azure Linux Virtual Machine
@@ -278,11 +282,14 @@ module "linux_vm" {
   admin_username = each.value.admin_username
   admin_password = each.value.admin_password
 
-  subnet_id = local.subnets[each.value.subnet_key] # e.g "pep_qc" check out local.subnets in vnet.tf file
+  subnet_id = local.subnets_lookup[each.value.subnet_key] # e.g "pep_qc" check out local.subnets in vnet.tf file
 
   source_image = each.value.source_image
 
   tags = local.common_tags
 
-  depends_on = [module.vnet_qc, module.vnet_sc]
+  depends_on = [module.vnets]
 }
+
+
+################################## END OF MAIN FILE ####################################################

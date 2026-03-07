@@ -14,7 +14,7 @@ The infrastructure is built in **layers**, and each layer depends on the one bel
 │  AI Hub, Projects, OpenAI, Search, AI Connections       │
 ├─────────────────────────────────────────────────────────┤
 │  Layer 4: PRIVATE ENDPOINTS (pep.tf)                    │
-│  Secure inbound access — one module, data-driven map    │
+│  Secure inbound access — data-driven map registry       │
 ├─────────────────────────────────────────────────────────┤
 │  Layer 3: PRIVATE DNS ZONES (pdns.tf)                   │
 │  Name resolution for privatelink domains                │
@@ -22,8 +22,11 @@ The infrastructure is built in **layers**, and each layer depends on the one bel
 │  Layer 2: COMPUTE & SERVICES (main.tf)                  │
 │  App Services, Functions, Redis, CosmosDB, etc.         │
 ├─────────────────────────────────────────────────────────┤
-│  Layer 1: NETWORKING (vnet.tf)                          │
-│  VNets, Subnets, and the subnet lookup map              │
+│  Layer 1.5: SUBNETS (subnet.tf)                         │
+│  Granular subnets and the subnets_lookup map            │
+├─────────────────────────────────────────────────────────┤
+│  Layer 1: VNets (vnet.tf)                               │
+│  Virtual Networks managed via scale-via-data vnets map  │
 ├─────────────────────────────────────────────────────────┤
 │  Layer 0: FOUNDATION (providers.tf, data_source.tf)     │
 │  Provider config, existing resource group references    │
@@ -111,10 +114,17 @@ terraform.tfvars                    variables.tf
                     ↓                   ↓
               vnet.tf              main.tf
          ┌──────────────┐    ┌──────────────────┐
-         │ module.vnet_qc│    │ module.app_service│
-         │ module.subnet*│    │ module.redis_cache│
-         │ local.subnets │    │ module.key_vault  │
-         └──────┬───────┘    └────────┬─────────┘
+         │ module.vnets │    │ module.app_service│
+         └──────┬───────┘    │ module.redis_cache│
+                │            │ module.key_vault  │
+                │ VNet IDs   └────────┬─────────┘
+                ↓                     │
+              subnet.tf               │
+         ┌──────────────┐             │
+         │ module.      │             │
+         │ subnets_qc/sc│             │
+         │ lookup map   │             │
+         └──────┬───────┘             │
                 │                     │
                 │ subnet IDs          │ resource IDs
                 ↓                     ↓
@@ -126,7 +136,7 @@ terraform.tfvars                    variables.tf
                 │             │   (filtered map)       │
                 │ zone IDs    │ module.private_         │
                 └────────────→│   endpoints            │
-                              └──────────────────────┘
+                               └──────────────────────┘
 ```
 
 ---
@@ -150,34 +160,32 @@ This pattern is used in:
 - `pdns.tf` — for conditional DNS zone creation
 - `pep.tf` — for the `enabled` flag on each private endpoint entry
 
-### The Subnet Map (`vnet.tf`)
+### The Subnet Lookup Map (`subnet.tf`)
 
-Instead of hardcoding subnet IDs, we use a **lookup map**:
+Instead of hardcoding subnet IDs, we use a **centralized lookup map** in `subnet.tf`:
 
 ```hcl
-# In vnet.tf
+# In subnet.tf
 locals {
-  subnets = {
-    fend_qc  = module.subnet_fend_qc.subnet_id
-    bend_qc  = module.subnet_bend_qc.subnet_id
-    pep_qc   = module.subnet_pep_qc.subnet_id
-    pep_sc   = module.subnet_pep_sc.subnet_id
-    func_sc  = module.subnet_func_sc.subnet_id
-    logic_sc = module.subnet_logic_sc.subnet_id
+  subnets_lookup = {
+    pep_qc   = module.subnets_qc["pep"].subnet_id
+    fend_qc  = module.subnets_qc["frontend"].subnet_id
+    pep_sc   = module.subnets_sc["pep"].subnet_id
+    # ...
   }
 }
 ```
 
 Then in `main.tf`, a service just references its key:
 ```hcl
-vnet_subnet_id = local.subnets[each.value.subnet_key]
+vnet_subnet_id = local.subnets_lookup[each.value.subnet_key]
 # e.g. each.value.subnet_key = "fend_qc" → resolves to the actual subnet resource ID
 ```
 
 **Benefits:**
-- Adding a new subnet only requires editing `vnet.tf` + `terraform.tfvars`
-- Services are decoupled from specific subnet resources
-- Moving a service to a different subnet = changing one string in `.tfvars`
+- **Decoupling**: Adding a new subnet only requires editing `subnet.tf`.
+- **Flexibility**: Services are decoupled from specific subnet resources.
+- **Ease of use**: Moving a service to a different subnet = changing one string in `.tfvars`.
 
 ### Private DNS Zones (`pdns.tf`)
 
@@ -227,8 +235,8 @@ locals {
 # Step 2: Define all PEPs in a single map
 locals {
   pep_subnets = {
-    qc = module.subnet_pep_qc.subnet_id
-    sc = module.subnet_pep_sc.subnet_id
+    qc_pep = module.subnets_qc["pep"].subnet_id
+    sc_pep = module.subnets_sc["pep"].subnet_id
   }
 
   private_endpoints = {
@@ -378,13 +386,13 @@ Or use the sync scripts in `scripts/` to auto-copy from `dev/`.
 
 ### Adding a New Region
 
-**Effort: Add to `vnet.tf` + `terraform.tfvars`**
+**Effort: Add to `vnet.tf`, `subnet.tf`, and `terraform.tfvars`**
 
-1. Add a new VNet module in `vnet.tf` (e.g., `module "vnet_nc"`)
-2. Add new subnet modules for the region
-3. Add subnet entries to `local.subnets`
-4. Add a VNet link in `pdns.tf`'s module block
-5. Set values in `terraform.tfvars`
+1. Add a new entry to the `vnets` map in `vnet.tf`.
+2. Add a new subnet map (e.g., `nc_subnets`) and logic in `subnet.tf`.
+3. Add new subnet entries to `local.subnets_lookup`.
+4. Add a VNet link in `pdns.tf`'s module block.
+5. Set values in `terraform.tfvars`.
 
 ---
 
@@ -424,8 +432,8 @@ modules/my-service/
 | `storage-account` | `.storage_account_id` | `pep.tf`, `foundry.tf` |
 | `key-vault` | `.key_vault_id` | `pep.tf`, `foundry.tf` |
 | `pdns` | `.dns_zone_id` | `pep.tf` (via `local.dns_zone_ids`) |
-| `vnet` | `.vnet_id` | `pdns.tf` (for VNet linking) |
-| `subnet` | `.subnet_id` | `vnet.tf` (via `local.subnets`), `pep.tf` (via `local.pep_subnets`) |
+| `vnet` | `.vnet_id` | `pdns.tf`, `subnet.tf` |
+| `subnet` | `.subnet_id` | `subnet.tf` (via `local.subnets_lookup`), `pep.tf` |
 
 ---
 
@@ -442,13 +450,16 @@ variables.tf (declares types)
        ├──→ data_source.tf (resource_group_name)
        │          │
        │          ↓
-       ├──→ vnet.tf (VNet/Subnet config)
+       ├──→ vnet.tf (VNet config)
        │       │
-       │       ├── local.subnets map
+       │       ↓
+       ├──→ subnet.tf (Subnet config)
+       │       │
+       │       ├── local.subnets_lookup map
        │       │        │
        │       ↓        ↓
        ├──→ main.tf (compute modules)
-       │       │        uses local.subnets for VNet integration
+       │       │        uses local.subnets_lookup for VNet integration
        │       │
        │       ↓ outputs resource IDs
        │       │
@@ -459,7 +470,7 @@ variables.tf (declares types)
        ├──→ pep.tf (private endpoints)
        │       │    uses: resource IDs from main.tf
        │       │    uses: dns_zone_ids from pdns.tf
-       │       │    uses: subnet IDs from vnet.tf
+       │       │    uses: subnet IDs from subnet.tf
        │       │
        └──→ foundry.tf (AI services)
                 uses: storage + keyvault from main.tf
@@ -474,11 +485,11 @@ variables.tf (declares types)
 | :--- | :--- |
 | **One file to edit** | `terraform.tfvars` — all values, toggles, configs |
 | **Feature toggles** | `var.feature_toggles` map — booleans per service |
-| **Dynamic subnets** | `local.subnets` map in `vnet.tf` — key-based lookup |
+| **Dynamic subnets** | `local.subnets_lookup` map in `subnet.tf` — key-based lookup |
 | **Conditional DNS** | `local.filtered_dns_zones` — removes nulls from toggled map |
 | **Centralized PEPs** | `local.private_endpoints` + `local.enabled` in `pep.tf` |
 | **One module call** | `module "private_endpoints"` iterates over `local.enabled` |
-| **Multi-region** | Two VNets (Qatar Central + Sweden Central), both linked to DNS |
+| **Multi-region** | Multiple VNets managed from a single map in `vnet.tf` |
 | **AI integration** | Separate `foundry.tf` with independent toggles |
 | **Env consistency** | Sync scripts copy `dev/` → `stg/` + `prod/` |
 | **Scale up** | Add entries to `terraform.tfvars` maps |

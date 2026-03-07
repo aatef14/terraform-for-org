@@ -20,8 +20,8 @@ locals { # This is block generates resources IDs for private DNS zones
 locals {
 
   pep_subnets = { # Use this to specify the subnet for each private endpoint 
-    qc = module.subnet_pep_qc.subnet_id
-    sc = module.subnet_pep_sc.subnet_id
+    qc_pep = module.subnets_qc["pep"].subnet_id
+    sc_pep = module.subnets_sc["pep"].subnet_id
   }
 
   private_endpoints = { # To add more copy the block and paste it below, and modify the name and other values
@@ -30,8 +30,9 @@ locals {
       enabled                        = var.feature_toggles["app_service"]
       name                           = "pep-${var.app_service_config["fend"].app_service_name}"
       location                       = data.azurerm_resource_group.rg_dev.location
+      
       resource_group_name            = data.azurerm_resource_group.rg_dev.name
-      subnet                         = "qc" # Get the subnet ID from the locals.pep_subnets map
+      subnet                         = "qc_pep" # Get the subnet ID from the locals.pep_subnets map
       private_connection_resource_id = module.app_service["fend"].app_service_id
       subresource_names              = ["sites"]
       private_dns_zone_ids           = [local.dns_zone_ids["websites"]]
@@ -43,7 +44,8 @@ locals {
       name                           = "pep-${var.app_service_config["bend"].app_service_name}"
       location                       = data.azurerm_resource_group.rg_dev.location
       resource_group_name            = data.azurerm_resource_group.rg_dev.name
-      subnet                         = "qc"
+      
+      subnet                         = "qc_pep" # Get the subnet ID from the locals.pep_subnets map
       private_connection_resource_id = module.app_service["bend"].app_service_id
       subresource_names              = ["sites"]
       private_dns_zone_ids           = [local.dns_zone_ids["websites"]]
@@ -55,7 +57,8 @@ locals {
       name                           = "pep-${var.storage_account_config["st-1"].storage_account_name}-blob"
       location                       = data.azurerm_resource_group.rg_dev.location
       resource_group_name            = data.azurerm_resource_group.rg_dev.name
-      subnet                         = "qc"
+      
+      subnet                         = "qc_pep_pep" # Get the subnet ID from the locals.pep_subnets map
       private_connection_resource_id = module.storage_account["st-1"].storage_account_id
       subresource_names              = ["blob"]
       private_dns_zone_ids           = [local.dns_zone_ids["blob"]]
@@ -67,7 +70,8 @@ locals {
       name                           = "pep-${var.storage_account_config["st-1"].storage_account_name}-file"
       location                       = data.azurerm_resource_group.rg_dev.location
       resource_group_name            = data.azurerm_resource_group.rg_dev.name
-      subnet                         = "qc"
+      
+      ubnet                         = "qc_pep" # Get the subnet ID from the locals.pep_subnets map
       private_connection_resource_id = module.storage_account["st-1"].storage_account_id
       subresource_names              = ["file"]
       private_dns_zone_ids           = [local.dns_zone_ids["file"]]
@@ -79,7 +83,8 @@ locals {
       name                           = "pep-${var.key_vault["kv_1"].key_vault_name}"
       location                       = data.azurerm_resource_group.rg_dev.location
       resource_group_name            = data.azurerm_resource_group.rg_dev.name
-      subnet                         = "qc"
+      
+      subnet                         = "qc_pep" # Get the subnet ID from the locals.pep_subnets map
       private_connection_resource_id = module.key_vault["kv_1"].key_vault_id
       subresource_names              = ["vault"]
       private_dns_zone_ids           = [local.dns_zone_ids["keyvault"]]
@@ -88,23 +93,25 @@ locals {
     # Redis Cache
     redis = {
       enabled                        = var.feature_toggles["redis"]
-      name                           = "pep-${var.redis_config["redis_1"].name}"
+      name                           = "pep-${var.redis_config["redis-01"].name}"
       location                       = data.azurerm_resource_group.rg_dev.location
       resource_group_name            = data.azurerm_resource_group.rg_dev.name
-      subnet                         = "qc"
-      private_connection_resource_id = module.redis_cache[0].redis_id
-      subresource_names              = ["redisCache"]
+      
+      subnet                         = "qc_pep" # Get the subnet ID from the locals.pep_subnets map
+      private_connection_resource_id = module.redis_cache["redis-01"].redis_id
+      subresource_names              = ["redisc_pepache"]
       private_dns_zone_ids           = [local.dns_zone_ids["redis"]]
       tags                           = local.common_tags
     }
     # Service Bus
     service_bus = {
       enabled                        = var.feature_toggles["service_bus"]
-      name                           = "pep-${var.service_bus_config["sb_1"].name}"
+      name                           = "pep-${var.service_bus_config["sb-01"].name}"
       location                       = data.azurerm_resource_group.rg_dev.location
       resource_group_name            = data.azurerm_resource_group.rg_dev.name
-      subnet                         = "qc"
-      private_connection_resource_id = module.service_bus[0].namespace_id
+      
+      subnet                         = "qc_pep" # Get the subnet ID from the locals.pep_subnets map
+      private_connection_resource_id = module.service_bus["sb-01"].namespace_id
       subresource_names              = ["namespace"]
       private_dns_zone_ids           = [local.dns_zone_ids["messaging"]]
       tags                           = local.common_tags
@@ -112,11 +119,12 @@ locals {
     # APIM
     apim = {
       enabled                        = var.feature_toggles["apim"]
-      name                           = "pep-${var.apim_config["apim_1"].name}"
+      name                           = "pep-${var.apim_config["apim-01"].name}"
       location                       = data.azurerm_resource_group.rg_dev.location
       resource_group_name            = data.azurerm_resource_group.rg_dev.name
-      subnet                         = "qc"
-      private_connection_resource_id = module.apim[0].apim_id
+      
+      subnet                         = "qc_pep" # Get the subnet ID from the locals.pep_subnets map
+      private_connection_resource_id = module.apim["apim-01"].apim_id
       subresource_names              = ["apim"]
       private_dns_zone_ids           = [local.dns_zone_ids["apim"]]
       tags                           = local.common_tags
@@ -124,11 +132,12 @@ locals {
     # Logic App
     logic_app = {
       enabled                        = var.feature_toggles["logic_app"]
-      name                           = "pep-${var.logic_app_config["la_1"].name}"
+      name                           = "pep-${var.logic_app_config["logic-01"].name}"
       location                       = data.azurerm_resource_group.rg_dev.location
       resource_group_name            = data.azurerm_resource_group.rg_dev.name
-      subnet                         = "qc"
-      private_connection_resource_id = module.logic_app[0].logic_app_id
+      
+      subnet                         = "qc_pep" # Get the subnet ID from the locals.pep_subnets map
+      private_connection_resource_id = module.logic_app["logic-01"].logic_app_id
       subresource_names              = ["logicApp"]
       private_dns_zone_ids           = [local.dns_zone_ids["logicapp"]]
       tags                           = local.common_tags
@@ -136,11 +145,12 @@ locals {
     # Function App
     function_app = {
       enabled                        = var.feature_toggles["function_app"]
-      name                           = "pep-${var.function_app_config["fa_1"].name}"
+      name                           = "pep-${var.function_app_config["function_1"].name}"
       location                       = data.azurerm_resource_group.rg_dev.location
       resource_group_name            = data.azurerm_resource_group.rg_dev.name
-      subnet                         = "qc"
-      private_connection_resource_id = module.function_app[0].function_app_id
+      
+      subnet                         = "qc_pep" # Get the subnet ID from the locals.pep_subnets map
+      private_connection_resource_id = module.function_app["function_1"].function_app_id
       subresource_names              = ["functionApp"]
       private_dns_zone_ids           = [local.dns_zone_ids["functionapp"]]
       tags                           = local.common_tags
@@ -164,7 +174,7 @@ module "private_endpoints" {
   name                = each.value.name
   location            = each.value.location
   resource_group_name = each.value.resource_group_name
-  subnet_id           = local.pep_subnets[each.value.subnet]
+  subnet_id           = local.pep_subnets[each.value.subnet] # Get the subnet ID from the locals.pep_subnets map
 
   private_connection_resource_id = each.value.private_connection_resource_id
   subresource_names              = each.value.subresource_names
