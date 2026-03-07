@@ -38,6 +38,8 @@ module "storage_account" {
   account_replication_type = each.value.storage_account_replication_type
   account_kind             = each.value.storage_account_kind
   tags                     = local.common_tags
+
+  depends_on = [module.vnet_qc, module.vnet_sc]
 }
 
 # WEB APP SERVICE CONFIG - VNET INTEGRATION - optional
@@ -55,6 +57,8 @@ module "app_service" {
   vnet_subnet_id         = local.subnets[each.value.subnet_key]
   docker_image_name      = each.value.docker_image_name
   tags                   = local.common_tags
+
+  depends_on = [module.vnet_qc, module.vnet_sc]
 }
 
 
@@ -76,6 +80,8 @@ module "redis_cache" {
   replicas_per_master = each.value.replicas_per_master
 
   tags = local.common_tags
+
+  depends_on = [module.vnet_qc, module.vnet_sc]
 }
 
 
@@ -105,6 +111,8 @@ module "function_app" {
 
   vnet_subnet_id = local.subnets[each.value.subnet_key]
   tags           = local.common_tags
+
+  depends_on = [module.vnet_qc, module.vnet_sc, module.storage_account]
 }
 
 
@@ -119,6 +127,8 @@ module "key_vault" {
   tenant_id           = data.azurerm_client_config.current.tenant_id
   key_vault_sku_name  = each.value.key_vault_sku
   tags                = local.common_tags
+
+  depends_on = [module.vnet_qc, module.vnet_sc]
 }
 
 
@@ -135,7 +145,7 @@ module "apim" {
   publisher_email = each.value.publisher_email
   sku_name        = each.value.sku_name
 
-  depends_on = [module.service_bus]
+  depends_on = [module.vnet_qc, module.vnet_sc, module.service_bus]
 }
 
 # Azure Service Bus
@@ -149,6 +159,8 @@ module "service_bus" {
   capacity                     = each.value.capacity
   sbus_sku_name                = each.value.sku_name
   premium_messaging_partitions = each.value.premium_messaging_partitions
+
+  depends_on = [module.vnet_qc, module.vnet_sc]
 }
 
 # Azure Cosmos DB
@@ -170,6 +182,8 @@ module "cosmos_db" {
   backup_interval_in_minutes      = each.value.backup_interval_in_minutes
   backup_retention_in_hours       = each.value.backup_retention_in_hours
   backup_storage_redundancy       = each.value.backup_storage_redundancy
+
+  depends_on = [module.vnet_qc, module.vnet_sc]
 }
 
 # Azure PostgreSQL Flexible Server
@@ -187,6 +201,8 @@ module "postgresql" {
   storage_mb             = each.value.storage_mb
 
   tags = local.common_tags
+
+  depends_on = [module.vnet_qc, module.vnet_sc]
 }
 
 # Azure Event Grid Namespace
@@ -204,6 +220,8 @@ module "event_grid" {
   public_network_access_enabled = each.value.public_network_access_enabled
 
   tags = local.common_tags
+
+  depends_on = [module.vnet_qc, module.vnet_sc]
 }
 
 # Azure Logic App Standard
@@ -224,6 +242,8 @@ module "logic_app" {
   virtual_network_subnet_id        = module.subnet_logic_sc.subnet_id
 
   tags = local.common_tags
+
+  depends_on = [module.vnet_qc, module.vnet_sc, module.storage_account]
 }
 
 # Azure Event Hub Namespace
@@ -241,6 +261,8 @@ module "event_hub" {
   public_network_access_enabled = each.value.public_network_access_enabled
 
   tags = local.common_tags
+
+  depends_on = [module.vnet_qc, module.vnet_sc]
 }
 
 # Azure Linux Virtual Machine
@@ -261,4 +283,6 @@ module "linux_vm" {
   source_image = each.value.source_image
 
   tags = local.common_tags
+
+  depends_on = [module.vnet_qc, module.vnet_sc]
 }
